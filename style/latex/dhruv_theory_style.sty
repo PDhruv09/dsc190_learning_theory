@@ -1,0 +1,157 @@
+%% dhruv_theory_style.sty
+%% Custom style package extracted from the user's pasted document,
+%% with a few safe additions inspired by dsc180reportstyle.sty.
+%%
+%% Usage:
+%%   \documentclass{article}
+%%   \usepackage{dhruv_theory_style}
+%%
+%% Then put title/author/date in the main .tex file as usual.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{dhruv_theory_style}[2026/04/10 Custom DSC theory style]
+
+% -------------------------------------------------------
+% Core packages
+% -------------------------------------------------------
+\RequirePackage[letterpaper, margin=1in]{geometry}
+\RequirePackage{setspace}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath, amssymb, amsthm}
+\RequirePackage{mathtools}
+\RequirePackage{bm}
+\RequirePackage{verbatim}
+\RequirePackage[dvipsnames,table]{xcolor}
+\RequirePackage[hyphens]{url}
+\RequirePackage{hyperref}
+\RequirePackage{enumitem}
+\RequirePackage{booktabs}
+\RequirePackage{parskip}
+\RequirePackage{mdframed}
+\RequirePackage{titlesec}
+\RequirePackage{array}
+
+% -------------------------------------------------------
+% Hyperref colour scheme
+% -------------------------------------------------------
+\definecolor{MyBrown}{rgb}{0.3,0,0}
+\definecolor{MyBlue}{rgb}{.2,.2,.8}
+\definecolor{MyRed}{rgb}{0.4,0,0.1}
+\definecolor{MyGreen}{rgb}{0,0.4,0}
+\definecolor{LightGrey}{rgb}{0.7,0.7,0.7}
+
+\hypersetup{
+  breaklinks        = true,
+  bookmarksnumbered = true,
+  bookmarksopen     = true,
+  bookmarksopenlevel= 2,
+  pdfpagemode       = UseOutlines,
+  colorlinks        = true,
+  linkcolor         = MyRed,
+  citecolor         = MyBlue,
+  filecolor         = MyBrown,
+  urlcolor          = MyGreen
+}
+
+% -------------------------------------------------------
+% Paragraph / footnote / list spacing
+% Inspired by dsc180reportstyle.sty, but kept moderate.
+% -------------------------------------------------------
+\setlength{\footnotesep}{6.65\p@}
+\setlength{\skip\footins}{9\p@ \@plus 4\p@ \@minus 2\p@}
+\renewcommand{\footnoterule}{\kern-3\p@ \hrule width 12pc \kern 2.6\p@}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5.5pt}
+
+\setlist[itemize]{topsep=4pt, itemsep=2pt, parsep=2pt}
+\setlist[enumerate]{topsep=4pt, itemsep=2pt, parsep=2pt}
+
+% -------------------------------------------------------
+% Math operators / shortcuts
+% -------------------------------------------------------
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\sign}{\operatorname{sign}}
+\newcommand{\R}{\mathbb{R}}
+
+% Bold vectors without overriding the standard \vec arrow.
+\newcommand{\vect}[1]{\bm{#1}}
+
+% -------------------------------------------------------
+% Theorem-like environments
+% -------------------------------------------------------
+\newtheoremstyle{dscstyle}
+  {6pt}{6pt}{\itshape}{}{\bfseries}{.}{.5em}{}
+\theoremstyle{dscstyle}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{claim}[theorem]{Claim}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% -------------------------------------------------------
+% Section title formatting
+% -------------------------------------------------------
+\titleformat{\section}{\large\bfseries\raggedright}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\raggedright}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\itshape\raggedright}{}{0em}{}
+
+% -------------------------------------------------------
+% Boxes
+% -------------------------------------------------------
+\newmdenv[
+  linecolor         = MyRed,
+  linewidth         = 1pt,
+  skipabove         = 8pt,
+  skipbelow         = 8pt,
+  innertopmargin    = 8pt,
+  innerbottommargin = 8pt,
+  innerleftmargin   = 10pt,
+  innerrightmargin  = 10pt,
+  backgroundcolor   = red!3
+]{summarybox}
+
+\newmdenv[
+  linecolor         = black,
+  linewidth         = 1pt,
+  backgroundcolor   = white,
+  skipabove         = 6pt,
+  skipbelow         = 6pt,
+  innertopmargin    = 6pt,
+  innerbottommargin = 6pt,
+  innerleftmargin   = 8pt,
+  innerrightmargin  = 8pt
+]{solutionbox}
+
+\newmdenv[
+  linecolor         = LightGrey,
+  linewidth         = 0.8pt,
+  backgroundcolor   = black!2,
+  skipabove         = 6pt,
+  skipbelow         = 6pt,
+  innertopmargin    = 6pt,
+  innerbottommargin = 6pt,
+  innerleftmargin   = 8pt,
+  innerrightmargin  = 8pt
+]{notebox}
+
+% -------------------------------------------------------
+% Simple title helper (optional)
+% Keeps standard \title/\author/\date, but slightly tightens spacing.
+% -------------------------------------------------------
+\makeatletter
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\LARGE\bfseries \@title \par}
+    \vspace{0.5em}
+    {\large \@author \par}
+    \vspace{0.25em}
+    {\@date \par}
+  \end{center}
+  \vspace{1em}
+}
+\makeatother

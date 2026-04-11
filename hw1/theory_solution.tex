@@ -1,0 +1,586 @@
+\documentclass{article}
+\usepackage{../style/dhruv_theory_style}
+
+% -------------------------------------------------------
+% Document metadata
+% -------------------------------------------------------
+\title{\textbf{Part B: Theory Problem}\\[4pt]
+       \large $\Delta$-Separated Threshold-Realizable Sequences}
+\author{DSC 180}
+\date{\today}
+
+% =======================================================
+\begin{document}
+% =======================================================
+
+\maketitle
+\tableofcontents
+\newpage
+
+% =======================================================
+\section{Problem Overview}
+% =======================================================
+
+This problem starts from the threshold story in lecture and then pushes it one
+step further.
+
+Throughout, let $\mathcal{X} = [0,1]$, $\mathcal{Y} = \{-1,+1\}$, and let
+\[
+h_\theta(x) = \sign(x-\theta),
+\]
+where we use the convention $\sign(z)=+1$ for $z \ge 0$ and $\sign(z)=-1$ for
+$z<0$.
+
+We will study sequences with one extra structural assumption beyond what was
+explicitly analyzed in lecture.
+\newline
+
+\textbf{$\Delta$-Separated Threshold-Realizable Sequences.}
+We say a sequence $((x_t,y_t))_{t=1}^T$ is \emph{$\Delta$-separated
+threshold-realizable} if there exist $\theta^* \in [0,1]$ and $\Delta > 0$
+such that
+\[
+y_t = h_{\theta^*}(x_t)
+\qquad \text{and} \qquad
+|x_t-\theta^*| \ge \Delta
+\qquad \text{for every round } t.
+\]
+
+\qquad
+\qquad
+
+% =======================================================
+\section{From Continuous Thresholds to a Finite Class}
+% =======================================================
+
+\textbf{Question.}
+Design a finite grid $G \subseteq [0,1]$ whose size depends only on $\Delta$,
+and consider the associated finite threshold class
+\[
+H_G = \{h_\theta : \theta \in G\}.
+\]
+Prove that for every $\Delta$-separated threshold-realizable sequence, there
+exists some $\theta \in G$ such that
+\[
+h_\theta(x_t)=y_t
+\qquad \text{for all } t=1,\dots,T.
+\]
+Then use the Halving theorem from lecture to derive a mistake bound of order
+\[
+O\!\left(\log\left(\frac{1}{\Delta}\right)\right)
+\]
+for an explicit online learner.
+
+Your answer should clearly state:
+\begin{itemize}[leftmargin=2.5em]
+    \item your choice of grid $G$,
+    \item the size of $G$ as a function of $\Delta$,
+    \item the resulting mistake bound.
+\end{itemize}
+
+\begin{solutionbox}
+
+\subsection{Construction of the Grid}
+
+We choose a grid with spacing $\Delta/2$:
+\[
+G
+=
+\left\{
+k\cdot \frac{\Delta}{2}
+:
+k=0,1,2,\dots,\left\lfloor \frac{2}{\Delta}\right\rfloor
+\right\}
+\cap [0,1].
+\]
+
+Its size satisfies
+\[
+|G|
+\le
+\left\lfloor \frac{2}{\Delta}\right\rfloor + 1
+=
+O\!\left(\frac{1}{\Delta}\right).
+\]
+
+The reason for spacing $\Delta/2$ is that for every $\theta^* \in [0,1]$,
+there exists some grid point $\theta \in G$ such that
+\[
+|\theta-\theta^*| \le \frac{\Delta}{2}.
+\]
+
+\subsection{Proof That a Grid Threshold Is Consistent}
+
+\begin{claim}
+\leavevmode\\
+    For every $\Delta$-separated threshold-realizable sequence
+    $(x_t,y_t)_{t=1}^T$, there exists $\theta \in G$ such that
+    \[
+    h_\theta(x_t)=y_t
+    \qquad \text{for all } t=1,\dots,T.
+    \]
+\end{claim}
+\begin{proof}
+\leavevmode\\
+Because the sequence is $\Delta$-separated threshold-realizable, there exists
+$\theta^* \in [0,1]$ such that
+\[
+y_t = h_{\theta^*}(x_t)=\sign(x_t-\theta^*)
+\qquad \text{for all } t,
+\]
+and
+\[
+|x_t-\theta^*| \ge \Delta
+\qquad \text{for all } t.
+\]
+
+By construction of the grid, there exists some $\theta \in G$ with
+\[
+|\theta-\theta^*| \le \frac{\Delta}{2}.
+\]
+
+We now show that $h_\theta(x_t)=h_{\theta^*}(x_t)$ for every $t$.
+
+\textbf{Case 1:} $y_t=+1$.
+
+Then $x_t \ge \theta^*$, and by separation,
+\[
+x_t-\theta^* \ge \Delta.
+\]
+Using $|\theta-\theta^*| \le \Delta/2$,
+\[
+x_t-\theta
+=
+(x_t-\theta^*)-(\theta-\theta^*)
+\ge
+\Delta-\frac{\Delta}{2}
+=
+\frac{\Delta}{2}
+>0.
+\]
+So $x_t \ge \theta$, hence
+\[
+h_\theta(x_t)=+1=y_t.
+\]
+
+\textbf{Case 2:} $y_t=-1$.
+
+Then $x_t<\theta^*$, and by separation,
+\[
+\theta^*-x_t \ge \Delta.
+\]
+Again using $|\theta-\theta^*| \le \Delta/2$,
+\[
+\theta-x_t
+=
+(\theta^*-x_t)-(\theta^*-\theta)
+\ge
+\Delta-\frac{\Delta}{2}
+=
+\frac{\Delta}{2}
+>0.
+\]
+So $x_t<\theta$, hence
+\[
+h_\theta(x_t)=-1=y_t.
+\]
+
+Thus $h_\theta(x_t)=y_t$ for every $t$.
+\end{proof}
+
+\subsection{Halving Algorithm and Mistake Bound}
+
+Consider the finite class
+\[
+H_G=\{h_\theta:\theta\in G\}.
+\]
+Run the Halving algorithm on this class.
+
+Since the claim above shows that there exists a hypothesis in $H_G$ consistent
+with the entire sequence, the Halving theorem applies. Therefore the number of
+mistakes is at most
+\[
+M \le \log_2 |H_G| = \log_2 |G|.
+\]
+Using the bound on the size of the grid,
+\[
+M
+\le
+\log_2\!\left(\left\lfloor \frac{2}{\Delta}\right\rfloor+1\right)
+=
+O\!\left(\log\left(\frac{1}{\Delta}\right)\right).
+\]
+
+\subsection*{Final Answer for Part 1}
+
+\begin{itemize}[leftmargin=2.5em]
+    \item \textbf{Choice of grid:}
+    \[
+    G=
+    \left\{
+    k\cdot \frac{\Delta}{2}
+    :
+    k=0,1,2,\dots,\left\lfloor \frac{2}{\Delta}\right\rfloor
+    \right\}
+    \cap [0,1].
+    \]
+
+    \item \textbf{Size of the grid:}
+    \[
+    |G|
+    \le
+    \left\lfloor \frac{2}{\Delta}\right\rfloor+1
+    =
+    O\!\left(\frac{1}{\Delta}\right).
+    \]
+
+    \item \textbf{Mistake bound:}
+    \[
+    M
+    \le
+    \log_2\!\left(\left\lfloor \frac{2}{\Delta}\right\rfloor+1\right)
+    =
+    O\!\left(\log\left(\frac{1}{\Delta}\right)\right).
+    \]
+\end{itemize}
+
+\end{solutionbox}
+
+% =======================================================
+\section{A Positive Margin from Separation}
+% =======================================================
+
+\textbf{Question.}
+\newline
+View thresholds as linear predictors by choosing a feature map
+\[
+\phi:[0,1]\to \mathbb{R}^d
+\]
+and a unit vector $u^*$ depending on $\theta^*$.
+
+Prove that every $\Delta$-separated threshold-realizable sequence is linearly
+separable with margin at least $c\Delta$ for some absolute constant $c>0$
+under your representation, while
+\[
+\|\phi(x)\|\le R
+\qquad \text{for all } x\in [0,1]
+\]
+for some absolute constant $R$.
+
+Then use the Perceptron theorem from lecture to derive an explicit mistake
+bound of order
+\[
+O\!\left(\frac{1}{\Delta^2}\right).
+\]
+
+Your answer should clearly specify your chosen feature map, the margin lower
+bound, the norm bound, and the final mistake bound.
+
+\begin{solutionbox}
+
+\subsection{Feature Map and Linear Representation}
+
+Chosen
+\[
+\phi(x)=(x,1)\in \R^2.
+\]
+Let
+\[
+w^*=(1,-\theta^*).
+\]
+Then
+\[
+\langle w^*,\phi(x)\rangle
+=
+1\cdot x + (-\theta^*)\cdot 1
+=
+x-\theta^*.
+\]
+Therefore
+\[
+\sign(\langle w^*,\phi(x)\rangle)
+=
+\sign(x-\theta^*)
+=
+h_{\theta^*}(x).
+\]
+
+So this representation realizes threshold classification exactly.
+
+Now normalize:
+\[
+u^*=\frac{w^*}{\|w^*\|}.
+\]
+Since $\theta^*\in[0,1]$,
+\[
+\|w^*\|
+=
+\sqrt{1+(\theta^*)^2}
+\le
+\sqrt{2}.
+\]
+
+\subsection{Margin Lower Bound}
+
+For every round $t$,
+\[
+y_t\langle u^*,\phi(x_t)\rangle
+=
+\frac{y_t\langle w^*,\phi(x_t)\rangle}{\|w^*\|}
+=
+\frac{y_t(x_t-\theta^*)}{\|w^*\|}.
+\]
+Because
+\[
+y_t=\sign(x_t-\theta^*),
+\]
+we get
+\[
+y_t(x_t-\theta^*) = |x_t-\theta^*|.
+\]
+By the $\Delta$-separation assumption,
+\[
+|x_t-\theta^*| \ge \Delta.
+\]
+Also $\|w^*\|\le \sqrt{2}$. Hence
+\[
+y_t\langle u^*,\phi(x_t)\rangle
+\ge
+\frac{\Delta}{\sqrt{2}}.
+\]
+
+Thus the sequence is linearly separable with margin at least
+\[
+\gamma \ge \frac{\Delta}{\sqrt{2}}.
+\]
+So we can take
+\[
+c=\frac{1}{\sqrt{2}}.
+\]
+
+\subsection{Norm Bound}
+
+For any $x\in[0,1]$,
+\[
+\|\phi(x)\|^2 = x^2+1 \le 2.
+\]
+Therefore
+\[
+\|\phi(x)\| \le \sqrt{2}.
+\]
+So we may take
+\[
+R=\sqrt{2}.
+\]
+
+\subsection{Perceptron Mistake Bound}
+
+By the Perceptron theorem, the number of mistakes satisfies
+\[
+M \le \left(\frac{R}{\gamma}\right)^2.
+\]
+Substituting the bounds above,
+\[
+M
+\le
+\left(\frac{\sqrt{2}}{\Delta/\sqrt{2}}\right)^2
+=
+\left(\frac{2}{\Delta}\right)^2
+=
+\frac{4}{\Delta^2}.
+\]
+Hence
+\[
+M = O\!\left(\frac{1}{\Delta^2}\right).
+\]
+
+\subsection*{Final Answer for Part 2}
+
+\begin{itemize}[leftmargin=2.5em]
+    \item \textbf{Feature map:}
+    \[
+    \phi(x)=(x,1)\in\R^2.
+    \]
+
+    \item \textbf{Margin lower bound:}
+    \[
+    \gamma \ge \frac{\Delta}{\sqrt{2}}.
+    \]
+
+    \item \textbf{Norm bound:}
+    \[
+    \|\phi(x)\|\le \sqrt{2}
+    \qquad \text{for all } x\in[0,1].
+    \]
+
+    \item \textbf{Mistake bound:}
+    \[
+    M\le \frac{4}{\Delta^2}
+    =
+    O\!\left(\frac{1}{\Delta^2}\right).
+    \]
+\end{itemize}
+
+\end{solutionbox}
+
+% =======================================================
+\section{Comparison and Interpretation}
+% =======================================================
+
+\textbf{Question.}
+\newline
+Explain why the continuous-threshold impossibility phenomenon from lecture does
+not contradict Part 1.
+
+Then compare the two mistake bounds you obtained in Parts 1 and 2. Why do they
+scale differently with $\Delta$? What is each argument measuring about the
+problem?
+
+\begin{solutionbox}
+
+The continuous-threshold impossibility result from lecture applies to the full
+class
+\[
+\mathcal{H}=\{h_\theta:\theta\in[0,1]\}
+\]
+with no structural restriction on the sequence. In that unrestricted setting,
+an adversary can place examples arbitrarily close to the true threshold, which
+prevents an online learner from obtaining a finite worst-case mistake bound.
+
+Part 1 does not contradict this because it assumes something extra:
+$\Delta$-separation. Once every example must remain at least $\Delta$ away from
+the true threshold $\theta^*$, thresholds within distance $\Delta/2$ of
+$\theta^*$ become indistinguishable on the observed data. That is why the
+continuous class can be replaced by a finite grid. So the impossibility result
+and the positive result in Part 1 refer to different settings.
+
+Now compare the two bounds:
+\[
+\text{Part 1: } O\!\left(\log\left(\frac{1}{\Delta}\right)\right),
+\qquad
+\text{Part 2: } O\!\left(\frac{1}{\Delta^2}\right).
+\]
+
+They scale differently because they come from different kinds of arguments.
+
+The Part 1 argument is \emph{combinatorial}. It counts how many effectively
+different hypotheses remain after using the separation assumption. Since the
+effective finite class has size
+\[
+O\!\left(\frac{1}{\Delta}\right),
+\]
+the Halving algorithm gives a logarithmic mistake bound.
+
+The Part 2 argument is \emph{geometric}. It uses linear separability and the
+margin bound. The Perceptron theorem depends on
+\[
+\left(\frac{R}{\gamma}\right)^2.
+\]
+Because the margin is proportional to $\Delta$, the mistake bound scales like
+$1/\Delta^2$.
+
+So the Halving argument measures how many candidate thresholds need to be
+distinguished, while the Perceptron argument measures how hard the problem is
+geometrically in terms of margin.
+
+\end{solutionbox}
+
+% =======================================================
+\section{Optional Strengthening: Audit an AI Proof}
+% =======================================================
+
+\textbf{Question.}
+An AI assistant gives the following argument:
+
+\hangindent=2em
+\hangafter=0
+Because every example is at least $\Delta$ away from the true threshold, continuous thresholds effectively form a class of size $O(1/\Delta)$. Therefore any online learner, including Perceptron, must make at most $O(\log(1/\Delta))$ mistakes on every $\Delta$-separated threshold-realizable sequence.
+
+Identify at least two mathematical problems with this argument. Then write a
+corrected statement that is true and prove it.
+
+\begin{solutionbox}
+
+There are at least two mathematical problems with the AI's argument.
+
+\textbf{Problem 1.}
+It incorrectly concludes that because the effective class size is
+$O(1/\Delta)$, \emph{any} online learner must make only
+$O(\log(1/\Delta))$ mistakes. That is not true. A class-size argument gives a
+mistake bound only for specific algorithms such as the Halving algorithm. It is
+not a universal guarantee for every possible learner.
+
+\textbf{Problem 2.}
+It incorrectly applies the same conclusion to Perceptron. The Perceptron
+theorem does not use class size. It uses margin and feature norm. In this
+problem, the Perceptron bound is
+\[
+O\!\left(\frac{1}{\Delta^2}\right),
+\]
+not
+\[
+O\!\left(\log\left(\frac{1}{\Delta}\right)\right).
+\]
+
+\textbf{Corrected statement.}
+For every $\Delta>0$, if we run the Halving algorithm on the finite threshold
+class
+\[
+H_G=\{h_\theta:\theta\in G\},
+\]
+where
+\[
+G=
+\left\{
+k\cdot \frac{\Delta}{2}
+:
+k=0,1,2,\dots,\left\lfloor \frac{2}{\Delta}\right\rfloor
+\right\}
+\cap [0,1],
+\]
+then on every $\Delta$-separated threshold-realizable sequence, the number of
+mistakes is at most
+\[
+\log_2\!\left(\left\lfloor \frac{2}{\Delta}\right\rfloor+1\right)
+=
+O\!\left(\log\left(\frac{1}{\Delta}\right)\right).
+\]
+
+\textbf{Proof.}
+From Part 1, there exists some $\theta\in G$ such that
+\[
+h_\theta(x_t)=y_t
+\qquad \text{for all } t=1,\dots,T.
+\]
+So the class $H_G$ contains a hypothesis consistent with the entire sequence.
+
+The Halving algorithm starts with all hypotheses in $H_G$. Whenever it makes a
+mistake, at least half of the currently surviving hypotheses are eliminated.
+Because a consistent hypothesis is never removed, the version space always
+contains at least one hypothesis. Therefore after $M$ mistakes,
+\[
+1 \le \frac{|G|}{2^M}.
+\]
+This implies
+\[
+M \le \log_2 |G|.
+\]
+Using
+\[
+|G| \le \left\lfloor \frac{2}{\Delta}\right\rfloor+1,
+\]
+we obtain
+\[
+M
+\le
+\log_2\!\left(\left\lfloor \frac{2}{\Delta}\right\rfloor+1\right)
+=
+O\!\left(\log\left(\frac{1}{\Delta}\right)\right).
+\]
+
+This corrected statement is true for the Halving algorithm specifically. It
+does not imply the same bound for arbitrary online learners or for Perceptron.
+
+\end{solutionbox}
+
+\end{document}
