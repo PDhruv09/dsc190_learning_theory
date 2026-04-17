@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 \usepackage{../style/latex/dhruv_theory_style}
 
 \newcommand{\vcdim}{\operatorname{VCdim}}
@@ -7,8 +7,11 @@
 \newcommand{\classB}{\mathcal{H}_{\mathrm{quad}}}
 \newcommand{\zeroone}{\{0,1\}}
 
-\title{Assignment 2\\Learning Theory Write-Up}
-\author{Dhruv}
+% -------------------------------------------------------
+% Document metadata
+% -------------------------------------------------------
+\title{\textbf{DSC 190/291 Assignment 2}}
+\author{Dhruv Patel}
 \date{\today}
 
 \begin{document}
@@ -16,593 +19,561 @@
 \tableofcontents
 \newpage
 
-\begin{summarybox}
-This document gives a complete solution for Parts A, B, and C. It uses the
-repository style system in \texttt{/style/latex/}, includes formal proof plans
-before each proof, identifies Lean targets for the general linear-representation
-results, and records a small computational verification for the growth-function
-counts.
-\end{summarybox}
+\section{Part A: Restriction Patterns for Two Intervals}
 
-\section{Part A}
+\subsection{Problem Overview}
 
-Throughout Part A, let \(\classA\) be the class of unions of at most two
-intervals on the real line. For an ordered sample
+In Part A we study the hypothesis class consisting of unions of at most two
+intervals on the real line. Let
 \[
-x_1 < x_2 < \dots < x_n,
+\classA
+=
+\left\{
+\mathbf{1}_{I_1 \cup I_2}
+:
+I_1,I_2 \text{ intervals in } \R
+\right\},
 \]
-we write the induced labeling as a binary string
+where either interval is allowed to be empty. When we restrict a hypothesis in
+\(\classA\) to an ordered sample
 \[
-(h(x_1),\dots,h(x_n)) \in \zeroone^n,
+x_1 < x_2 < \cdots < x_n,
 \]
-where \(h(x_i)=1\) means \(x_i\) lies in the union of intervals and
-\(h(x_i)=0\) means it does not.
+we obtain a binary string
+\[
+\bigl(h(x_1),\dots,h(x_n)\bigr)\in \zeroone^n.
+\]
+The main goal of Part A is to understand exactly which binary strings can arise,
+count them, determine the VC dimension, and compare the exact counts to general
+bounds from learning theory.
 
-\subsection{Problem A1}
+\subsection{Problem A1: Restriction Patterns}
 
-\subsubsection{1. Restatement}
-For an ordered sample \(x_1<\cdots<x_n\), characterize exactly which binary
-labelings can be realized by a hypothesis in \(\classA\). The required answer
-is that a labeling is realizable if and only if its string contains at most two
-runs of \(1\)s.
+\textbf{Question.}
+\newline
+Characterize exactly which binary labelings on an ordered sample
+\[
+x_1 < x_2 < \cdots < x_n
+\]
+are realizable by a hypothesis in \(\classA\).
 
-\subsubsection{2. Explanation}
-The question asks for a structural description of the restriction patterns of
-the class of unions of two intervals. The key concept is that an interval picks
-out one contiguous block of sample points, so a union of two intervals can pick
-out at most two such blocks. On a sorted sample, contiguous blocks are exactly
-runs of \(1\)s in the binary labeling.
+The key statement to prove is:
+\[
+\text{a labeling is realizable}
+\quad\Longleftrightarrow\quad
+\text{it has at most two runs of }1\text{s}.
+\]
 
-\subsubsection{3. Solution Plan}
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We are given \(n\) ordered points on the real line and a binary labeling
+\[
+y=(y_1,\dots,y_n)\in\zeroone^n.
+\]
+We must determine exactly when there exists a union of at most two intervals
+whose indicator function agrees with this labeling on the sample.
+
+\subsubsection{Explanation}
+
+An interval intersects an ordered sample in a contiguous block of indices. Since
+our class allows at most two intervals, the positive labels should form at most
+two contiguous blocks. In binary-string language, contiguous blocks of positive
+labels are exactly runs of \(1\)s. So the whole problem is to make precise the
+statement that unions of two intervals correspond exactly to binary strings with
+at most two runs of \(1\)s.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Prove the forward implication: every hypothesis in \(\classA\) induces
-  at most two runs of \(1\)s.
-  \item Prove the reverse implication: from any labeling with at most two runs
-  of \(1\)s, explicitly construct one or two intervals that realize it.
-  \item Conclude the desired equivalence.
+    \item Prove the forward implication:
+    every hypothesis in \(\classA\) induces at most two runs of \(1\)s.
+    \item Prove the reverse implication:
+    every binary string with at most two runs of \(1\)s can be realized by
+    explicitly constructing suitable intervals.
+    \item Conclude the equivalence.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
+\subsubsection{Formal Solution / Proof}
 
 \begin{theorem}
-Let \(x_1<\dots<x_n\) be distinct real numbers. A binary labeling
-\((y_1,\dots,y_n)\in\zeroone^n\) is realizable by \(\classA\) if and only if
-the string \(y_1\dots y_n\) has at most two runs of \(1\)s.
+Let \(x_1 < \cdots < x_n\) be distinct real numbers. A labeling
+\[
+(y_1,\dots,y_n)\in\zeroone^n
+\]
+is realizable by \(\classA\) if and only if the binary string
+\[
+y_1y_2\cdots y_n
+\]
+contains at most two runs of \(1\)s.
 \end{theorem}
 
 \begin{proof}
-First suppose \(h\in \classA\). Then there exist intervals \(I_1\) and \(I_2\)
-such that
+\leavevmode\\
+\textbf{(\(\Rightarrow\)) Suppose \(h\in\classA\).}
+
+Then there exist intervals \(I_1\) and \(I_2\) such that
 \[
-h = \mathbf{1}_{I_1 \cup I_2}.
+h=\mathbf{1}_{I_1\cup I_2}.
 \]
-For a sorted sample, the set of indices \(i\) with \(x_i \in I_1\) is either
-empty or a contiguous block of indices, because an interval cannot leave and
-then re-enter the ordered sample. The same is true for \(I_2\). Therefore the
-set of indices with \(h(x_i)=1\) is the union of at most two contiguous blocks.
-Equivalently, the binary string \(h(x_1)\dots h(x_n)\) has at most two runs of
-\(1\)s.
+For a sorted sample, the set of indices \(i\) with \(x_i\in I_1\) is either
+empty or a contiguous block. Indeed, once the sample enters an interval, it
+cannot leave and later re-enter that same interval while the sample points are
+ordered increasingly. The same statement is true for \(I_2\).
 
-Now suppose a binary string \(y_1\dots y_n\) has at most two runs of \(1\)s.
-We construct a hypothesis in \(\classA\) realizing it.
-
-If there are no runs of \(1\)s, then the all-zero labeling is realized by the
-empty union of intervals.
-
-If there is exactly one run of \(1\)s, say from indices \(a\) through \(b\),
-then choose any interval containing \(x_a,\dots,x_b\) and excluding all other
-sample points, for example
+Therefore the set of indices with label \(1\) under \(h\) is the union of at
+most two contiguous blocks. Equivalently, the binary string
 \[
-I_1 =
-\left[\frac{x_{a-1}+x_a}{2},\,\frac{x_b+x_{b+1}}{2}\right]
+h(x_1)\cdots h(x_n)
 \]
-with the obvious endpoint modifications when \(a=1\) or \(b=n\). Then
-\(\mathbf{1}_{I_1}(x_i)=y_i\) for all \(i\), so the labeling is realized by one
-interval.
+has at most two runs of \(1\)s.
 
-If there are exactly two runs of \(1\)s, say on index blocks
-\([a,b]\) and \([c,d]\) with \(b<c\), then define intervals \(I_1\) and \(I_2\)
-separately around those two blocks:
-\[
-I_1 =
-\left[\frac{x_{a-1}+x_a}{2},\,\frac{x_b+x_{b+1}}{2}\right],
-\qquad
-I_2 =
-\left[\frac{x_{c-1}+x_c}{2},\,\frac{x_d+x_{d+1}}{2}\right],
-\]
-again with endpoint modifications when a block touches the sample boundary.
-These intervals realize exactly those two runs and no others, so
-\[
-\mathbf{1}_{I_1 \cup I_2}(x_i)=y_i
-\qquad \text{for all } i.
-\]
+\textbf{(\(\Leftarrow\)) Suppose the string \(y_1\cdots y_n\) has at most two
+runs of \(1\)s.}
 
-Thus every labeling with at most two runs of \(1\)s is realizable by
-\(\classA\), and every realizable labeling has at most two runs of \(1\)s.
-\end{proof}
-
-\subsubsection{5. Conclusion}
-The restriction patterns of \(\classA\) are exactly the binary strings with at
-most two runs of \(1\)s. This characterization is the foundation for the
-growth-function count in Problem A2 and the VC-dimension computation in Problem
-A3.
-
-\subsubsection{6. Lean Formalization}
-Lean: NO.
-
-\subsubsection{7. Computational Check (if applicable)}
-For \(n \le 6\), the script \texttt{hw2/code/enumeration\_check.py} enumerates
-all binary strings of length \(n\) and confirms that the realizable ones are
-exactly those with at most two runs of \(1\)s.
-
-\subsection{Problem A2}
-
-\subsubsection{1. Restatement}
-Using the characterization from Problem A1, compute the growth function
-\(\growth_{\classA}(n)\), the number of distinct labelings of \(n\) ordered
-points realizable by \(\classA\). The count must be broken into the exact cases
-of no runs, one run, and two runs of \(1\)s.
-
-\subsubsection{2. Explanation}
-The key concept is combinatorial counting. Since Problem A1 gives a complete
-description of realizable labelings, the growth function is obtained by counting
-binary strings with at most two runs of \(1\)s and making sure the cases do not
-overlap.
-
-\subsubsection{3. Solution Plan}
-\begin{enumerate}[leftmargin=2.5em]
-  \item Count the unique string with no \(1\)-run.
-  \item Count strings with exactly one run of \(1\)s by choosing the start and
-  end of the block.
-  \item Count strings with exactly two runs of \(1\)s by choosing four boundary
-  positions.
-  \item Add the three disjoint case counts and simplify.
-\end{enumerate}
-
-\subsubsection{4. Formal Solution / Proof}
-
-\begin{claim}
-For \(n \ge 1\),
-\[
-\growth_{\classA}(n)
-=
-1 + \binom{n+1}{2} + \binom{n+1}{4}.
-\]
-\end{claim}
-
-\begin{proof}
-By Problem A1, realizable labelings are exactly the strings with no run of
-\(1\)s, exactly one run of \(1\)s, or exactly two runs of \(1\)s.
+We construct a hypothesis in \(\classA\) that realizes it.
 
 \textbf{Case 1: no runs of \(1\)s.}
-There is exactly one such labeling, namely \(00\cdots0\). This contributes
-\[
-1.
-\]
+
+Then every label is \(0\). This is realized by taking the union of two empty
+intervals.
 
 \textbf{Case 2: exactly one run of \(1\)s.}
-Such a labeling is determined by choosing indices \(a \le b\) and declaring
+
+Suppose the run occupies indices \(a,\dots,b\). Then define one interval \(I_1\)
+that contains exactly the sample points \(x_a,\dots,x_b\). For example, if
+\(1<a\) and \(b<n\), we may take
 \[
-y_i =
-\begin{cases}
-1, & a \le i \le b,\\
-0, & \text{otherwise}.
-\end{cases}
+I_1=
+\left[\frac{x_{a-1}+x_a}{2},\,\frac{x_b+x_{b+1}}{2}\right].
 \]
-So the number of one-run strings is the number of contiguous blocks in
-\(\{1,\dots,n\}\):
+If the run touches the left or right edge of the sample, we modify the
+corresponding endpoint in the obvious way. Let \(I_2\) be empty. Then
 \[
-\sum_{a=1}^n \sum_{b=a}^n 1
-=
-\frac{n(n+1)}{2}
-=
-\binom{n+1}{2}.
+\mathbf{1}_{I_1\cup I_2}(x_i)=y_i
+\qquad\text{for all }i.
 \]
 
 \textbf{Case 3: exactly two runs of \(1\)s.}
-Such a string has the form
+
+Suppose the two runs occupy blocks \(a,\dots,b\) and \(c,\dots,d\), where
 \[
-0\cdots 0\, 1\cdots 1\, 0\cdots 0\, 1\cdots 1\, 0\cdots 0,
+1\le a\le b < c\le d\le n.
 \]
-where the two \(1\)-runs are nonempty and separated by at least one zero. A
-standard boundary encoding counts these strings by choosing four cut positions
-from the \(n+1\) gaps before, between, and after the sample points. Concretely,
-choose
+Choose one interval \(I_1\) containing exactly the first block and another
+interval \(I_2\) containing exactly the second block. Then
 \[
-0 \le s_1 < t_1 < s_2 < t_2 \le n,
-\]
-and place \(1\)s on indices \(s_1+1,\dots,t_1\) and \(s_2+1,\dots,t_2\). This
-is a bijection between two-run labelings and \(4\)-element subsets of the
-\(n+1\) boundary positions. Therefore the number of two-run strings is
-\[
-\binom{n+1}{4}.
+\mathbf{1}_{I_1\cup I_2}(x_i)=y_i
+\qquad\text{for all }i.
 \]
 
-Since the three cases are disjoint and exhaustive,
-\[
-\growth_{\classA}(n)
-=
-1 + \binom{n+1}{2} + \binom{n+1}{4}.
-\]
+Thus every binary string with at most two runs of \(1\)s is realizable by a
+union of at most two intervals.
 \end{proof}
 
-\subsubsection{5. Conclusion}
-The exact growth function is
-\[
-\growth_{\classA}(n)
-=
-1 + \binom{n+1}{2} + \binom{n+1}{4}.
-\]
-Its leading term is quartic, which already suggests the VC dimension will be
-finite and fairly small.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
-Lean: OPTIONAL.
+The realizable restriction patterns of \(\classA\) are exactly the binary
+strings with at most two runs of \(1\)s.
 
-If formalized, the target statement is:
-\[
-\forall n,\quad
-\growth_{\classA}(n)
-=
-1 + \binom{n+1}{2} + \binom{n+1}{4}.
-\]
+\subsubsection{Lean Formalization}
 
-\subsubsection{7. Computational Check (if applicable)}
-The script \texttt{hw2/code/enumeration\_check.py} enumerates all binary strings
-for \(n \le 6\), filters those with at most two runs of \(1\)s, and checks that
-the counts agree with the formula above. The resulting values are:
+Lean: NO.
 
-\begin{center}
-\begin{tabular}{ccccccc}
-\toprule
-\(n\) & 1 & 2 & 3 & 4 & 5 & 6 \\
-\midrule
-\(\growth_{\classA}(n)\) & 2 & 4 & 8 & 16 & 31 & 57 \\
-\bottomrule
-\end{tabular}
-\end{center}
+\subsubsection{Computational Check}
 
-\subsection{Problem A3}
+For \(n\le 6\), the script \texttt{hw2/code/enumeration\_check.py} checks that
+the counting formula from Problem A2 matches the number of binary strings with
+at most two runs of \(1\)s.
 
-\subsubsection{1. Restatement}
-Determine the VC dimension of \(\classA\), prove that four points can be
-shattered, prove that five points cannot be shattered, and then compute the
-Halving mistake bound \(\log_2 \growth_{\classA}(n)\). Finally compare that
-exact Halving bound with the Sauer--Shelah upper bound.
+\end{solutionbox}
 
-\subsubsection{2. Explanation}
-The key concept is VC dimension. A class shatters a set when it realizes every
-binary labeling on that set. The run characterization from Problem A1 makes the
-shattering test especially transparent on ordered points.
+\subsection{Problem A3: VC Dimension and Halving Bound}
 
-\subsubsection{3. Solution Plan}
+\textbf{Question.}
+\newline
+Determine the VC dimension of \(\classA\). Show that \(n=4\) is shatterable and
+that \(n=5\) is not. Then state the exact Halving bound and compare it to the
+Sauer--Shelah bound.
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We want the largest sample size on which \(\classA\) can realize every binary
+labeling. Then we use the exact growth function from Problem A2 to state the
+Halving mistake bound.
+
+\subsubsection{Explanation}
+
+The run characterization from Problem A1 makes the VC-dimension argument very
+clean. Every binary string on four bits has at most two runs of \(1\)s, but the
+five-bit string \(10101\) has three runs of \(1\)s and therefore is not
+realisable.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Show every labeling of four ordered points has at most two runs of
-  \(1\)s, so four points are shattered.
-  \item Exhibit a labeling of five ordered points with three runs of \(1\)s, so
-  five points are not shattered.
-  \item Conclude \(\vcdim(\classA)=4\).
-  \item Substitute the exact growth function from A2 into the Halving bound and
-  compare it to the Sauer--Shelah bound for VC dimension \(4\).
+    \item Show that every labeling of four ordered points is realizable.
+    \item Exhibit a nonrealizable labeling on five ordered points.
+    \item Conclude \(\vcdim(\classA)=4\).
+    \item Substitute the exact growth function into \(\log_2 \growth_{\classA}(n)\).
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
+\subsubsection{Formal Solution / Proof}
 
 \begin{claim}
-\(\vcdim(\classA)=4\).
+\[
+\vcdim(\classA)=4.
+\]
 \end{claim}
 
 \begin{proof}
-Take any four ordered points \(x_1<x_2<x_3<x_4\). Every binary string of length
-four has at most two runs of \(1\)s, because three runs would require at least
-five positions. By Problem A1, every one of the \(2^4=16\) labelings is
-realizable by \(\classA\). Hence the set \(\{x_1,x_2,x_3,x_4\}\) is shattered,
-so
+\leavevmode\\
+Take any four ordered points
 \[
-\vcdim(\classA) \ge 4.
+x_1<x_2<x_3<x_4.
+\]
+Any binary string of length \(4\) has at most two runs of \(1\)s. Therefore by
+Problem A1 every labeling on these four points is realizable by \(\classA\). So
+\(\{x_1,x_2,x_3,x_4\}\) is shattered and
+\[
+\vcdim(\classA)\ge 4.
 \]
 
-Now consider any five ordered points \(x_1<\cdots<x_5\). The labeling
+Now take any five ordered points
+\[
+x_1<x_2<x_3<x_4<x_5.
+\]
+The labeling
 \[
 (1,0,1,0,1)
 \]
-has three runs of \(1\)s. By Problem A1, it is not realizable by a union of at
-most two intervals. Therefore no set of five ordered points is shattered, so
+has three runs of \(1\)s. By Problem A1 this labeling is not realizable by a
+union of at most two intervals. Therefore no \(5\)-point set is shattered, so
 \[
-\vcdim(\classA) \le 4.
+\vcdim(\classA)\le 4.
 \]
-Combining the two inequalities gives
+Hence
 \[
 \vcdim(\classA)=4.
 \]
 \end{proof}
 
-For the Halving algorithm on \(n\) ordered sample points, the exact number of
-candidate restrictions is \(\growth_{\classA}(n)\), so the exact Halving bound
-is
+From Problem A2,
+\[
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}.
+\]
+Therefore the exact Halving bound is
 \[
 M_{\mathrm{Halving}}
 \le
-\log_2 \growth_{\classA}(n)
-=
-\log_2\!\left(1 + \binom{n+1}{2} + \binom{n+1}{4}\right).
+\log_2\!\left(1+\binom{n+1}{2}+\binom{n+1}{4}\right).
 \]
 
-Since \(\vcdim(\classA)=4\), the Sauer--Shelah lemma gives the general upper
-bound
+Since \(\vcdim(\classA)=4\), Sauer--Shelah yields
 \[
-\growth_{\classA}(n)
-\le
-\sum_{k=0}^4 \binom{n}{k}.
+\growth_{\classA}(n)\le \sum_{k=0}^4 \binom{n}{k},
 \]
-Therefore a coarser Halving bound is
+so the generic VC-based Halving bound is
 \[
 M_{\mathrm{Halving}}
 \le
 \log_2\!\left(\sum_{k=0}^4 \binom{n}{k}\right).
 \]
 
-\subsubsection{5. Conclusion}
-The VC dimension is exactly \(4\). The exact Halving mistake bound is
-\[
-\log_2\!\left(1 + \binom{n+1}{2} + \binom{n+1}{4}\right),
-\]
-while Sauer--Shelah gives a more general but looser upper bound through
-\(\sum_{k=0}^4 \binom{n}{k}\).
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+The VC dimension is exactly
+\[
+\vcdim(\classA)=4,
+\]
+and the exact Halving bound is sharper than the generic Sauer--Shelah-based
+bound because it uses the full structure of the class.
+
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-For \(n=4\), the computed growth value is
+\subsubsection{Computational Check}
+
+The exact growth values satisfy
 \[
 \growth_{\classA}(4)=16=2^4,
-\]
-which agrees with the shattering claim. For \(n=5\), the computed value is
-\[
+\qquad
 \growth_{\classA}(5)=31<32=2^5,
 \]
-which agrees with the failure to shatter five points.
+which agrees with the VC-dimension conclusion.
 
-\subsection{Problem A4}
+\end{solutionbox}
 
-\subsubsection{1. Restatement}
-Construct a hypothesis class whose VC dimension is exactly \(d\) and whose
-growth function on \(n\) points is exactly
+\subsection{Problem A4: Tightness of Sauer--Shelah}
+
+\textbf{Question.}
+\newline
+Construct a hypothesis class with VC dimension exactly \(d\) and growth function
 \[
-\sum_{k=0}^{d} \binom{n}{k}.
+\sum_{k=0}^{d}\binom{n}{k}.
 \]
-Explain why this shows that the Sauer--Shelah bound can be tight.
+Explain why this shows the Sauer--Shelah bound can be tight.
 
-\subsubsection{2. Explanation}
-The key concept is a tight example for Sauer--Shelah. A natural class is the
-collection of subsets of the domain of size at most \(d\). On an \(n\)-point
-sample, every labeling with at most \(d\) ones is realizable, and no labeling
-with more than \(d\) ones is.
+\begin{solutionbox}
 
-\subsubsection{3. Solution Plan}
+\subsubsection{Restatement}
+
+We need an explicit class whose growth function exactly equals the
+Sauer--Shelah upper bound.
+
+\subsubsection{Explanation}
+
+The natural example is the class of indicator functions of subsets of size at
+most \(d\). On an \(n\)-point sample, the realizable labelings are exactly those
+with at most \(d\) ones.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Define the class of all indicator functions of subsets of size at most
-  \(d\).
-  \item Prove that any \(d\)-point set is shattered.
-  \item Prove that no \((d+1)\)-point set is shattered.
-  \item Count the realizable restrictions on an \(n\)-point sample.
+    \item Define \(\mathcal{H}_{\le d}\).
+    \item Show that every \(d\)-point set is shattered.
+    \item Show that no \((d+1)\)-point set is shattered.
+    \item Count the realizable labelings on an \(n\)-point sample.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
+\subsubsection{Formal Solution / Proof}
 
-Let the domain \(X\) be any infinite set, and define
+Let \(X\) be an infinite set and define
 \[
 \mathcal{H}_{\le d}
 =
-\{\mathbf{1}_S : S \subseteq X,\ |S| \le d\}.
+\{\mathbf{1}_S : S\subseteq X,\ |S|\le d\}.
 \]
 
 \begin{claim}
-\(\vcdim(\mathcal{H}_{\le d})=d\).
+\[
+\vcdim(\mathcal{H}_{\le d})=d.
+\]
 \end{claim}
 
 \begin{proof}
-Take any \(d\) distinct points \(x_1,\dots,x_d\). For every labeling of these
-points, the positively labeled subset has size at most \(d\), so it is itself a
-set \(S\) with \(|S| \le d\). Then \(\mathbf{1}_S\) realizes that labeling.
-Hence every \(d\)-point set is shattered, so
+\leavevmode\\
+Take any \(d\) distinct points \(x_1,\dots,x_d\in X\). For any labeling
+\((y_1,\dots,y_d)\in\zeroone^d\), let
 \[
-\vcdim(\mathcal{H}_{\le d}) \ge d.
+S=\{x_i:y_i=1\}.
+\]
+Then \(|S|\le d\), so \(\mathbf{1}_S\in\mathcal{H}_{\le d}\), and it realizes
+the labeling. Hence every \(d\)-point set is shattered, so
+\[
+\vcdim(\mathcal{H}_{\le d})\ge d.
 \]
 
-Now take any \(d+1\) distinct points \(x_1,\dots,x_{d+1}\). The all-ones
-labeling would require a set \(S\) containing all \(d+1\) sample points, but no
-hypothesis in \(\mathcal{H}_{\le d}\) has support larger than \(d\). So a
-\((d+1)\)-point set cannot be shattered, and
+Now consider \(d+1\) distinct points \(x_1,\dots,x_{d+1}\). The all-ones
+labeling on these points would require a set \(S\) containing all \(d+1\)
+points, which is impossible because hypotheses in \(\mathcal{H}_{\le d}\) have
+support size at most \(d\). Therefore no \((d+1)\)-point set is shattered, so
 \[
-\vcdim(\mathcal{H}_{\le d}) \le d.
+\vcdim(\mathcal{H}_{\le d})\le d.
 \]
-Therefore
+Hence
 \[
 \vcdim(\mathcal{H}_{\le d})=d.
 \]
 \end{proof}
 
-Now fix an \(n\)-point sample \(x_1,\dots,x_n\). A labeling is realizable by
-\(\mathcal{H}_{\le d}\) if and only if it has at most \(d\) ones. For each
-\(k\in\{0,\dots,d\}\), there are exactly \(\binom{n}{k}\) such labelings with
-exactly \(k\) ones. Hence
+On an \(n\)-point sample, a labeling is realizable exactly when it has at most
+\(d\) ones. For each \(k\), there are \(\binom{n}{k}\) labelings with exactly
+\(k\) ones, so
 \[
-\growth_{\mathcal{H}_{\le d}}(n)
-=
-\sum_{k=0}^{d} \binom{n}{k}.
+\growth_{\mathcal{H}_{\le d}}(n)=\sum_{k=0}^{d}\binom{n}{k}.
 \]
 
-\subsubsection{5. Conclusion}
-This class has VC dimension exactly \(d\) and attains the Sauer--Shelah upper
-bound exactly. Therefore the Sauer--Shelah inequality is, in general, tight.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+This class has VC dimension exactly \(d\) and achieves the Sauer--Shelah upper
+bound exactly. Therefore the inequality can be tight.
+
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-For small \(d\) and \(n\), the expression
-\(\sum_{k=0}^d \binom{n}{k}\) can be checked directly by counting the binary
-strings of length \(n\) with at most \(d\) ones. No separate repository artifact
-is required here because the main enumeration script already illustrates the
-same type of counting argument.
+\subsubsection{Computational Check}
 
-\subsection{Problem A5}
+Not needed beyond the direct combinatorial count.
 
-\subsubsection{1. Restatement}
-Audit an AI-generated proof about the class \(\classA\). Identify the flaw in
-its counting argument, explain why the proof is invalid, and replace it with a
-correct statement based on the two-run characterization.
+\end{solutionbox}
 
-\subsubsection{2. Explanation}
-The key concept is structural counting. A bad AI proof often counts possible
-``switch points'' as though label changes could occur arbitrarily, but unions of
-two intervals impose strong interval constraints. The proof must respect the
-geometry of the class.
+\subsection{Problem A5: AI Proof Audit}
 
-\subsubsection{3. Solution Plan}
+\textbf{Question.}
+\newline
+An AI proof counts possible switch points as if a union of two intervals could
+realize any binary string with up to four changes. Explain why this is invalid
+and give the correct statement.
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We must identify the flaw in a switch-point counting argument and replace it
+with the correct run-based reasoning.
+
+\subsubsection{Explanation}
+
+The error is that switch points are not free parameters. The geometry of two
+intervals forces the positive set to be the union of at most two contiguous
+blocks, which is a stronger condition than merely bounding the number of label
+changes.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item State the flaw: arbitrary switch-point counting ignores interval
-  structure.
-  \item Explain why this leads to overcounting.
-  \item Replace the invalid claim with the correct run-based characterization.
-  \item Deduce the correct growth-function statement from Problem A2.
+    \item Explain why arbitrary change-point counting overcounts.
+    \item State the correct two-run characterization.
+    \item Deduce the correct growth-function formula.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
-Suppose the AI argument says that a union of two intervals can be counted by
-choosing up to four switch points independently among the \(n-1\) gaps between
-sample points, and therefore claims a count on the order of
+\subsubsection{Formal Solution / Proof}
+
+The AI proof is invalid because it ignores interval structure. A union of two
+intervals does not produce an arbitrary collection of sign changes; it produces
+at most two contiguous positive blocks. Therefore the correct structural
+statement is:
 \[
-\sum_{k=0}^4 \binom{n-1}{k}.
+\text{a labeling is realizable by }\classA
+\quad\Longleftrightarrow\quad
+\text{it has at most two runs of }1\text{s}.
 \]
-This argument is flawed for two reasons.
-
-First, it treats label changes as arbitrary, but a union of two intervals does
-not produce an arbitrary set of switch points. The positive region on a sorted
-sample must be the union of at most two contiguous blocks, so the valid patterns
-are exactly those with at most two runs of \(1\)s.
-
-Second, even when a pattern has at most four changes, the locations are not
-independent choices. The interval structure forces them to occur in a very
-specific alternating order, and the relevant combinatorial object is not ``all
-subsets of at most four switch points'' but rather ``boundary encodings of at
-most two runs of \(1\)s''.
-
-The correct statement is:
-\begin{quote}
-For \(n\) ordered sample points, the realizable labelings of \(\classA\) are
-exactly the binary strings with at most two runs of \(1\)s. Consequently,
+Once this is proved, the exact growth function follows from Problem A2:
 \[
-\growth_{\classA}(n)
-=
-1 + \binom{n+1}{2} + \binom{n+1}{4}.
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}.
 \]
-\end{quote}
 
-This follows immediately from Problem A1 for the structural characterization and
-from Problem A2 for the exact count.
+\subsubsection{Conclusion}
 
-\subsubsection{5. Conclusion}
-The AI proof is invalid because it counts unconstrained switch patterns instead
-of interval-consistent runs. The correct reasoning is run-based, not arbitrary
-change-point counting.
+The AI argument overcounts because it counts unconstrained change patterns. The
+correct argument is based on runs of \(1\)s.
 
-\subsubsection{6. Lean Formalization}
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-The enumeration script provides a concrete reality check: for \(n \le 6\), the
-brute-force counts agree with the two-run formula and do not agree with the much
-larger naive switch-point count.
+\subsubsection{Computational Check}
 
-\section{Part B}
+The small-\(n\) enumeration supports the corrected formula.
 
-Throughout Part B, define the quadratic-threshold class
+\end{solutionbox}
+
+\section{Part B: Quadratic Thresholds}
+
+\subsection{Problem Overview}
+
+In Part B we study
 \[
 \classB
 =
 \left\{
-h_{a,b,c} : x \mapsto \mathbf{1}\!\left[a x^2 + b x + c \ge 0\right]
-: (a,b,c)\in\R^3 \setminus \{(0,0,0)\}
+x\mapsto \mathbf{1}[a x^2+b x+c\ge 0]
+:
+(a,b,c)\in\R^3\setminus\{(0,0,0)\}
 \right\}.
 \]
-We again study restrictions to ordered samples \(x_1<\cdots<x_n\).
+The main tasks are to represent this class linearly, describe its restriction
+patterns, count them, and compute its VC dimension.
 
-\subsection{Problem B1}
+\subsection{Problem B1: General Upper Bound for Linear Representations}
 
-\subsubsection{1. Restatement}
-Prove the general upper bound: if a hypothesis class can be represented as
-homogeneous linear threshold functions in \(\R^D\), then its VC dimension is at
-most \(D\).
+\textbf{Question.}
+\newline
+Prove that if a hypothesis class is represented as homogeneous linear threshold
+functions in \(\R^D\), then its VC dimension is at most \(D\).
 
-\subsubsection{2. Explanation}
-The key concept is linear dependence. A set of \(D+1\) vectors in \(\R^D\) is
-always linearly dependent. That dependence can be converted into a labeling that
-no homogeneous linear threshold can realize, giving the contradiction needed for
-the VC-dimension upper bound.
+\begin{solutionbox}
 
-\subsubsection{3. Solution Plan}
-\begin{enumerate}[leftmargin=2.5em]
-  \item Assume \(D+1\) points are shattered after applying the representation
-  map \(\phi\).
-  \item Use linear dependence among their feature vectors.
-  \item Turn that dependence relation into a forbidden labeling.
-  \item Conclude that shattering \(D+1\) points is impossible.
-\end{enumerate}
+\subsubsection{Restatement}
 
-\subsubsection{4. Formal Solution / Proof}
-
-\begin{theorem}
-Let \(X\) be any domain and let \(\phi : X \to \R^D\). Define
+Suppose
 \[
 \mathcal{H}_{\phi}
 =
 \left\{
-x \mapsto \mathbf{1}\!\left[\langle w,\phi(x)\rangle \ge 0\right]
-: w \in \R^D
+x\mapsto \mathbf{1}[\langle w,\phi(x)\rangle\ge 0]
+:
+w\in\R^D
+\right\}.
+\]
+We must prove
+\[
+\vcdim(\mathcal{H}_{\phi})\le D.
+\]
+
+\subsubsection{Explanation}
+
+The proof uses linear dependence. If \(D+1\) points were shattered, then their
+feature vectors would realize every binary labeling by a homogeneous hyperplane.
+But \(D+1\) vectors in \(\R^D\) are linearly dependent, and that dependence
+produces a labeling that no such hyperplane can realize.
+
+\subsubsection{Solution Plan}
+
+\begin{enumerate}[leftmargin=2.5em]
+    \item Assume \(D+1\) points are shattered.
+    \item Write a nontrivial dependence relation among their feature vectors.
+    \item Convert coefficient signs into a target labeling.
+    \item Derive a contradiction by taking an inner product with the separating
+    weight vector.
+\end{enumerate}
+
+\subsubsection{Formal Solution / Proof}
+
+\begin{theorem}
+Let \(X\) be any domain and \(\phi:X\to\R^D\). Define
+\[
+\mathcal{H}_{\phi}
+=
+\left\{
+x\mapsto \mathbf{1}[\langle w,\phi(x)\rangle\ge 0]
+:
+w\in\R^D
 \right\}.
 \]
 Then
 \[
-\vcdim(\mathcal{H}_{\phi}) \le D.
+\vcdim(\mathcal{H}_{\phi})\le D.
 \]
 \end{theorem}
 
 \begin{proof}
+\leavevmode\\
 Assume for contradiction that \(\mathcal{H}_{\phi}\) shatters
-\(D+1\) points \(x_1,\dots,x_{D+1}\in X\). Write
 \[
-v_i = \phi(x_i)\in\R^D.
+x_1,\dots,x_{D+1}\in X.
 \]
-Since \(D+1\) vectors in \(\R^D\) are linearly dependent, there exists a
-nontrivial relation
+Let
 \[
-\alpha_1 v_1 + \cdots + \alpha_{D+1} v_{D+1}=0
+v_i=\phi(x_i)\in\R^D.
 \]
-with coefficients not all zero. Remove any zero coefficients if necessary and
-replace the relation by a minimal one, so every remaining coefficient is
-nonzero.
+Since there are \(D+1\) vectors in \(\R^D\), they are linearly dependent. So
+there exist scalars \(\alpha_1,\dots,\alpha_{D+1}\), not all zero, such that
+\[
+\sum_{i=1}^{D+1}\alpha_i v_i=0.
+\]
 
-Define the target labeling on the remaining indexed points by
+Remove any zero coefficients. On the remaining indices define the labeling
 \[
-y_i =
+y_i=
 \begin{cases}
-1, & \alpha_i > 0,\\
-0, & \alpha_i < 0.
+1, & \alpha_i>0,\\
+0, & \alpha_i<0.
 \end{cases}
 \]
-Because the original set is shattered, this labeling must be realizable by some
-weight vector \(w \in \R^D\). Since the sample is finite, we may perturb \(w\)
-slightly if necessary so that the realizing inequalities are strict on the
-sample:
+Because the sample is shattered, there exists \(w\in\R^D\) such that
 \[
-\langle w,v_i\rangle > 0 \quad \text{when } \alpha_i>0,
+\alpha_i>0 \implies \langle w,v_i\rangle >0,
 \qquad
-\langle w,v_i\rangle < 0 \quad \text{when } \alpha_i<0.
+\alpha_i<0 \implies \langle w,v_i\rangle <0.
 \]
-Now take the dot product of \(w\) with the dependence relation:
+Now take inner products with \(w\):
 \[
 0
 =
@@ -610,302 +581,332 @@ Now take the dot product of \(w\) with the dependence relation:
 w,\sum_{i=1}^{D+1}\alpha_i v_i
 \right\rangle
 =
-\sum_{i=1}^{D+1}\alpha_i \langle w,v_i\rangle.
+\sum_{i=1}^{D+1}\alpha_i\langle w,v_i\rangle.
 \]
-Every term in the final sum is strictly positive, because \(\alpha_i\) and
-\(\langle w,v_i\rangle\) have the same sign. Hence the sum is strictly
-positive, a contradiction.
-
-Therefore no set of \(D+1\) points can be shattered, so
+But every term in this final sum is strictly positive, because \(\alpha_i\) and
+\(\langle w,v_i\rangle\) have the same sign. Therefore the sum is strictly
+positive, which is impossible. This contradiction proves
 \[
-\vcdim(\mathcal{H}_{\phi}) \le D.
+\vcdim(\mathcal{H}_{\phi})\le D.
 \]
 \end{proof}
 
-\subsubsection{5. Conclusion}
-Any class represented by homogeneous linear threshold functions in \(\R^D\) has
-VC dimension at most \(D\). This is the general fact needed in Problem B2.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+Any class represented by homogeneous linear thresholds in \(\R^D\) has VC
+dimension at most \(D\).
+
+\subsubsection{Lean Formalization}
+
 Lean: YES.
 
-Target theorem to formalize:
-\begin{notebox}
+Target theorem:
 \[
-\text{If } \mathcal{H}_{\phi}
+\mathcal{H}_{\phi}
 =
-\left\{
-x \mapsto \mathbf{1}\!\left[\langle w,\phi(x)\rangle \ge 0\right]
-: w \in \R^D
-\right\},
-\text{ then }
-\vcdim(\mathcal{H}_{\phi}) \le D.
+\{x\mapsto \mathbf{1}[\langle w,\phi(x)\rangle\ge 0] : w\in\R^D\}
+\Longrightarrow
+\vcdim(\mathcal{H}_{\phi})\le D.
 \]
-\end{notebox}
 
-Repository artifact: \texttt{hw2/lean/vc\_dimension\_bound.lean}.
+Repository file:
+\texttt{hw2/lean/vc\_dimension\_bound.lean}.
 
-\subsubsection{7. Computational Check (if applicable)}
-No numerical check is needed here because the argument is purely linear
-algebraic.
+\subsubsection{Computational Check}
 
-\subsection{Problem B2}
+Not applicable.
 
-\subsubsection{1. Restatement}
-Show that quadratic threshold functions on the real line admit a linear
-representation in \(\R^3\) under the map
-\[
-\phi(x) = (x^2,x,1),
-\]
-and conclude from Problem B1 that their VC dimension is at most \(3\).
+\end{solutionbox}
 
-\subsubsection{2. Explanation}
-The key concept is feature lifting. The quadratic polynomial
-\(a x^2 + b x + c\) becomes a dot product with the lifted feature vector
-\((x^2,x,1)\). Once that representation is established, Problem B1 applies
-immediately.
+\subsection{Problem B2: Quadratic Transformation}
 
-\subsubsection{3. Solution Plan}
-\begin{enumerate}[leftmargin=2.5em]
-  \item Define the feature map \(\phi(x)=(x^2,x,1)\).
-  \item Rewrite every quadratic polynomial as a dot product in \(\R^3\).
-  \item Identify the quadratic-threshold class with a linear-threshold class in
-  \(\R^3\).
-  \item Invoke Problem B1 to obtain the VC-dimension upper bound.
-\end{enumerate}
-
-\subsubsection{4. Formal Solution / Proof}
+\textbf{Question.}
+\newline
 Define
 \[
-\phi : \R \to \R^3,
-\qquad
-\phi(x) = (x^2,x,1).
+\phi(x)=(x^2,x,1).
 \]
-For any \((a,b,c)\in\R^3\), let
+Show that quadratic thresholds become linear thresholds under this map and
+conclude that \(\vcdim(\classB)\le 3\).
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We must show that
 \[
-w=(a,b,c)\in\R^3.
+a x^2+b x+c
+=
+\langle (a,b,c),(x^2,x,1)\rangle
 \]
-Then
+and then apply Problem B1 with \(D=3\).
+
+\subsubsection{Explanation}
+
+This is the standard feature-lifting idea: the original class is nonlinear in
+the scalar input \(x\), but linear in the lifted coordinates \((x^2,x,1)\).
+
+\subsubsection{Solution Plan}
+
+\begin{enumerate}[leftmargin=2.5em]
+    \item Write the quadratic polynomial as a dot product in \(\R^3\).
+    \item Observe that the threshold class is now a linear-threshold class.
+    \item Apply the general VC-dimension upper bound from Problem B1.
+\end{enumerate}
+
+\subsubsection{Formal Solution / Proof}
+
+Define
+\[
+\phi:\R\to\R^3,
+\qquad
+\phi(x)=(x^2,x,1).
+\]
+For \(a,b,c\in\R\), let \(w=(a,b,c)\in\R^3\). Then
 \[
 \langle w,\phi(x)\rangle
 =
-a x^2 + b x + c.
+\langle (a,b,c),(x^2,x,1)\rangle
+=
+a x^2+b x+c.
 \]
 Therefore
 \[
-h_{a,b,c}(x)
+\mathbf{1}[a x^2+b x+c\ge 0]
 =
-\mathbf{1}\!\left[a x^2 + b x + c \ge 0\right]
-=
-\mathbf{1}\!\left[\langle w,\phi(x)\rangle \ge 0\right].
+\mathbf{1}[\langle w,\phi(x)\rangle \ge 0].
 \]
-So \(\classB\) is a linear-threshold class in \(\R^3\). By Problem B1,
-\[
-\vcdim(\classB) \le 3.
-\]
-
-\subsubsection{5. Conclusion}
-Quadratic thresholds on \(\R\) lift to homogeneous linear thresholds in
-\(\R^3\), and therefore
+So \(\classB\) is a homogeneous linear-threshold class in \(\R^3\). By Problem
+B1,
 \[
 \vcdim(\classB)\le 3.
 \]
 
-\subsubsection{6. Lean Formalization}
+\subsubsection{Conclusion}
+
+The quadratic-threshold class lifts to a linear-threshold class in three
+dimensions, so
+\[
+\vcdim(\classB)\le 3.
+\]
+
+\subsubsection{Lean Formalization}
+
 Lean: YES.
 
-Target theorem to formalize:
-\begin{notebox}
+Target identity:
 \[
-\forall a,b,c,x \in \R,\qquad
-a x^2 + b x + c
-=
-\langle (a,b,c),(x^2,x,1)\rangle.
+a x^2+b x+c=\langle (a,b,c),(x^2,x,1)\rangle.
 \]
-Together with Problem B1, this yields \(\vcdim(\classB)\le 3\).
-\end{notebox}
 
-Repository artifact: \texttt{hw2/lean/quadratic\_embedding.lean}.
+Repository file:
+\texttt{hw2/lean/quadratic\_embedding.lean}.
 
-\subsubsection{7. Computational Check (if applicable)}
-For small samples, the script in \texttt{hw2/code/enumeration\_check.py}
-computes the restriction counts predicted later in Problem B4. This does not
-prove the embedding, but it provides a sanity check on the induced pattern
-count.
+\subsubsection{Computational Check}
 
-\subsection{Problem B3}
+Not needed for the algebraic identity itself.
 
-\subsubsection{1. Restatement}
-Describe exactly which binary labelings of an ordered sample
-\(x_1<\cdots<x_n\) can arise from quadratic thresholds. The required argument
-must use the fact that a quadratic has at most two real roots and must describe
-all valid patterns carefully.
+\end{solutionbox}
 
-\subsubsection{2. Explanation}
-The key concept is root structure. A quadratic polynomial can only change sign
-when crossing a real root, and it has at most two real roots. Consequently the
-set on which the quadratic is nonnegative is either an interval, the complement
-of an interval, all of \(\R\), or the empty set. On an ordered sample this
-translates into a precise family of binary strings.
+\subsection{Problem B3: Restriction Patterns}
 
-\subsubsection{3. Solution Plan}
+\textbf{Question.}
+\newline
+Describe all binary labelings on an ordered sample
+\[
+x_1<x_2<\cdots<x_n
+\]
+that can be realized by thresholding a quadratic polynomial.
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We must characterize all strings of the form
+\[
+\bigl(\mathbf{1}[q(x_1)\ge 0],\dots,\mathbf{1}[q(x_n)\ge 0]\bigr),
+\]
+where \(q(x)=a x^2+b x+c\).
+
+\subsubsection{Explanation}
+
+The sign of a quadratic can only change at real roots, and a quadratic has at
+most two real roots. Therefore the nonnegative set is either all of \(\R\),
+empty, one interval, or the complement of one interval. On a sorted sample these
+geometric possibilities become binary-pattern constraints.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Use the root description of quadratic polynomials.
-  \item Translate each geometric possibility into a binary pattern on a sorted
-  sample.
-  \item Show that the valid \(1\)-sets are exactly: empty, one contiguous run,
-  or a prefix together with a suffix.
-  \item Verify the converse by constructing an appropriate quadratic in each
-  case.
+    \item Analyze sign patterns according to the number of roots and the sign of
+    the leading coefficient.
+    \item Translate each geometric case to a binary pattern on the sample.
+    \item Prove the converse by constructing quadratics for each valid pattern.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
+\subsubsection{Formal Solution / Proof}
 
 \begin{theorem}
-For an ordered sample \(x_1<\cdots<x_n\), a binary labeling
-\((y_1,\dots,y_n)\in\zeroone^n\) is realizable by \(\classB\) if and only if
-the set of indices with label \(1\) is one of the following:
+On an ordered sample \(x_1<\cdots<x_n\), the realizable \(1\)-sets of
+\(\classB\) are exactly:
 \begin{enumerate}[leftmargin=2.5em]
-  \item the empty set,
-  \item a single contiguous block,
-  \item the union of a prefix and a suffix separated by a nonempty middle block
-  of zeros.
+    \item the empty set,
+    \item one contiguous block,
+    \item the union of a prefix and a suffix, separated by a nonempty middle
+    block of zeros.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-Let \(q(x)=a x^2 + b x + c\).
+\leavevmode\\
+Let \(q(x)=a x^2+b x+c\).
 
 If \(a=0\), then \(q\) is linear or constant, so the set \(\{x:q(x)\ge 0\}\) is
-either empty, all of \(\R\), or a half-line. On an ordered sample this produces
-either the empty labeling, the all-ones labeling, a prefix of ones, or a suffix
-of ones. These are already covered by the three stated cases.
+either empty, all of \(\R\), a left half-line, or a right half-line. On an
+ordered sample this yields all zeros, all ones, a prefix of ones, or a suffix
+of ones.
 
-Now assume \(a\neq 0\). A quadratic has at most two real roots.
+Now suppose \(a\neq 0\). A quadratic has at most two real roots.
 
-If \(q\) has no real roots, then its sign never changes, so the labeling is
-either all ones or all zeros.
+If there are no real roots, the sign never changes, so the labeling is either
+all zeros or all ones.
 
-If \(q\) has two real roots \(r_1 \le r_2\), then:
+If there are two distinct real roots \(r_1<r_2\), then:
 \begin{itemize}[leftmargin=2.5em]
-  \item when \(a<0\), the set \(\{x:q(x)\ge 0\}\) is the interval
-  \([r_1,r_2]\), so the \(1\)-labels form one contiguous block on the sample;
-  \item when \(a>0\), the set \(\{x:q(x)\ge 0\}\) is the exterior region
-  \((-\infty,r_1]\cup[r_2,\infty)\), so the \(1\)-labels form a prefix together
-  with a suffix.
+    \item if \(a<0\), then \(q(x)\ge 0\) exactly on \([r_1,r_2]\), which gives
+    one contiguous block of ones on the sample;
+    \item if \(a>0\), then \(q(x)\ge 0\) exactly outside \((r_1,r_2)\), which
+    gives a prefix together with a suffix.
 \end{itemize}
 
-This proves that every realizable labeling has one of the three stated forms.
+Thus every realizable pattern has one of the three stated forms.
 
-For the converse, we explicitly realize each form.
+Conversely, the empty labeling is realized by \(q(x)=-1\), and the all-ones
+labeling by \(q(x)=1\).
 
-The empty labeling is realized by \(q(x)=-1\), and the all-ones labeling by
-\(q(x)=1\).
-
-If the \(1\)-labels form a single contiguous block from \(x_a\) through \(x_b\),
-choose roots \(r_1< x_a\) and \(r_2> x_b\) lying between neighboring sample
-points so that
+If we want one contiguous block from \(x_a\) through \(x_b\), choose roots
 \[
-q(x)=-(x-r_1)(x-r_2)
+r_1<x_a<x_b<r_2
 \]
-is nonnegative exactly on that block.
+with \(r_1\) and \(r_2\) placed in the neighboring gaps, and define
+\[
+q(x)=-(x-r_1)(x-r_2).
+\]
+Then \(q(x)\ge 0\) exactly on the chosen block.
 
-If the \(1\)-labels form a prefix together with a suffix, with a middle zero
-block from \(x_a\) through \(x_b\), choose roots \(r_1< x_a\) and \(r_2> x_b\)
-again between neighboring sample points, and define
+If we want a prefix together with a suffix, choose an interior zero block from
+\(x_a\) through \(x_b\), place roots around it, and define
 \[
 q(x)=(x-r_1)(x-r_2).
 \]
-Then \(q(x)\ge 0\) exactly outside the interval \((r_1,r_2)\), so it realizes
-that prefix--suffix pattern.
-
-Thus the listed patterns are exactly the realizable restrictions of
-\(\classB\).
+Then \(q(x)\ge 0\) exactly outside the middle interval, so the sample labeling
+is the desired prefix--suffix pattern.
 \end{proof}
 
-\subsubsection{5. Conclusion}
-Quadratic thresholds do not produce arbitrary sign-change patterns. Their
-restrictions are controlled by the root structure of quadratics: the \(1\)-set
-is either empty, one block, or a prefix together with a suffix.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+Quadratic thresholds realize exactly three kinds of positive sets on an ordered
+sample: empty, one block, or prefix-plus-suffix.
+
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-The enumeration script verifies for \(n \le 6\) that the count of strings in
-these three families matches the closed form derived in Problem B4.
+\subsubsection{Computational Check}
 
-\subsection{Problem B4}
+The small-\(n\) enumeration checks that counting these three families produces
+the exact growth formula in Problem B4.
 
-\subsubsection{1. Restatement}
-Use the structural characterization from Problem B3 to compute the growth
-function of \(\classB\) on \(n\) ordered points, determine its VC dimension, and
-compare the exact growth count with the Sauer--Shelah bound.
+\end{solutionbox}
 
-\subsubsection{2. Explanation}
-The key concept is again careful case counting. From B3, the valid labelings are
-empty, one run, or a prefix together with a suffix. Counting those patterns
-gives the exact growth function and also reveals the exact VC dimension.
+\subsection{Problem B4: Growth Function and VC Dimension}
 
-\subsubsection{3. Solution Plan}
+\textbf{Question.}
+\newline
+Using the restriction-pattern description from Problem B3, compute the exact
+growth function of \(\classB\), determine its VC dimension, and compare the
+exact count with the Sauer--Shelah bound.
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We must count exactly how many labelings arise from the three valid pattern
+types in Problem B3 and then use the result to determine the VC dimension.
+
+\subsubsection{Explanation}
+
+The counting is clean once the structure is correct. The main subtlety is that a
+prefix--suffix labeling is determined by its middle zero block, which must be a
+nonempty contiguous interior block.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Count the empty labeling.
-  \item Count one-run labelings by choosing a contiguous block.
-  \item Count prefix--suffix labelings by choosing the interior zero block.
-  \item Sum the disjoint cases and simplify.
-  \item Check shattering at \(n=3\) and failure at \(n=4\).
+    \item Count the empty labeling.
+    \item Count one contiguous block of ones.
+    \item Count prefix--suffix patterns.
+    \item Add the counts and simplify.
+    \item Check the formula at \(n=3\) and \(n=4\) to get the VC dimension.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
-By Problem B3, the realizable labelings fall into three disjoint classes.
+\subsubsection{Formal Solution / Proof}
 
-\textbf{Case 1: empty labeling.}
+By Problem B3, realizable labelings fall into three disjoint classes.
+
+\textbf{Case 1: the empty labeling.}
+
 There is exactly one such labeling.
 
-\textbf{Case 2: one contiguous run of \(1\)s.}
-The number of contiguous blocks in \(n\) ordered positions is
+\textbf{Case 2: one contiguous block of \(1\)s.}
+
+Such a labeling is specified by choosing indices
+\[
+1\le a\le b\le n
+\]
+and labeling exactly \(x_a,\dots,x_b\) by \(1\). Therefore the number of such
+labelings is
 \[
 \binom{n+1}{2}.
 \]
-This count includes the all-ones labeling.
 
-\textbf{Case 3: prefix together with suffix.}
+\textbf{Case 3: a prefix together with a suffix.}
+
 Such a labeling is determined by a nonempty contiguous middle block of zeros
-that is strictly interior to the sample. If that zero block runs from index
-\(a\) to index \(b\), then
+lying strictly inside the sample. If the zero block runs from index \(a\) to
+index \(b\), then
 \[
-2 \le a \le b \le n-1.
+2\le a\le b\le n-1.
 \]
-The number of such interior zero blocks is the number of contiguous blocks in
-\(\{2,\dots,n-1\}\), namely
+The number of such contiguous blocks in \(\{2,\dots,n-1\}\) is
 \[
 \binom{n-1}{2}.
 \]
 
-Adding the cases gives
+Therefore
 \[
 \growth_{\classB}(n)
 =
-1 + \binom{n+1}{2} + \binom{n-1}{2}.
+1+\binom{n+1}{2}+\binom{n-1}{2}.
 \]
-Since
-\[
-\binom{n+1}{2} + \binom{n-1}{2}
-=
-\frac{n(n+1)}{2} + \frac{(n-1)(n-2)}{2}
-=
-n^2-n+1,
-\]
-we obtain the closed form
-\[
-\growth_{\classB}(n)=n^2-n+2.
-\]
+Simplifying,
+\begin{align*}
+\growth_{\classB}(n)
+&=
+1+\frac{n(n+1)}{2}+\frac{(n-1)(n-2)}{2}\\
+&=
+1+\frac{n^2+n+n^2-3n+2}{2}\\
+&=
+1+\frac{2n^2-2n+2}{2}\\
+&=
+n^2-n+2.
+\end{align*}
 
-To compute the VC dimension, observe first that
+Now compute the VC dimension. At \(n=3\),
 \[
-\growth_{\classB}(3)=3^2-3+2=8=2^3.
+\growth_{\classB}(3)=3^2-3+2=8=2^3,
 \]
-So three ordered points are shattered. On the other hand,
+so three points are shattered. At \(n=4\),
 \[
 \growth_{\classB}(4)=4^2-4+2=14<16=2^4,
 \]
@@ -914,241 +915,364 @@ so four points are not shattered. Hence
 \vcdim(\classB)=3.
 \]
 
-This matches the upper bound from Problem B2. Since \(\vcdim(\classB)=3\),
-Sauer--Shelah gives
+Since \(\vcdim(\classB)=3\), Sauer--Shelah gives
 \[
-\growth_{\classB}(n)
-\le
-\sum_{k=0}^{3}\binom{n}{k}.
+\growth_{\classB}(n)\le \sum_{k=0}^{3}\binom{n}{k}.
 \]
-The exact count \(n^2-n+2\) is sharper for this specific class.
+The exact count \(n^2-n+2\) is sharper because it uses the actual structure of
+quadratic thresholds.
 
-\subsubsection{5. Conclusion}
+\subsubsection{Conclusion}
+
 The exact growth function is
 \[
 \growth_{\classB}(n)=n^2-n+2,
 \]
-and the VC dimension is exactly \(3\). The exact count is smaller than the
-general Sauer--Shelah upper bound, as expected.
-
-\subsubsection{6. Lean Formalization}
-Lean: OPTIONAL.
-
-If formalized, the target statements are
+and the VC dimension is exactly
 \[
-\growth_{\classB}(n)=n^2-n+2
-\qquad\text{and}\qquad
 \vcdim(\classB)=3.
 \]
 
-\subsubsection{7. Computational Check (if applicable)}
-The script \texttt{hw2/code/enumeration\_check.py} checks the pattern count for
-\(n\le 6\). The resulting values are:
+\subsubsection{Lean Formalization}
 
-\begin{center}
-\begin{tabular}{ccccccc}
-\toprule
-\(n\) & 1 & 2 & 3 & 4 & 5 & 6 \\
-\midrule
-\(\growth_{\classB}(n)\) & 2 & 4 & 8 & 14 & 22 & 32 \\
-\bottomrule
-\end{tabular}
-\end{center}
+Lean: OPTIONAL.
 
-\subsection{Problem B5}
+\subsubsection{Computational Check}
 
-\subsubsection{1. Restatement}
-Audit an AI proof about quadratic thresholds. Identify the flaw in an argument
-that counts arbitrary change points, explain why that argument is invalid, and
-replace it with correct reasoning based on the root structure of quadratics.
+The script verifies the values
+\[
+2,\ 4,\ 8,\ 14,\ 22,\ 32
+\]
+for \(n=1,\dots,6\).
 
-\subsubsection{2. Explanation}
-The key concept is that not every pattern with a small number of sign changes is
-produced by a quadratic. The shape of a quadratic forces the positive region to
-be either an interval or the complement of an interval. Any proof that ignores
-this curvature constraint overcounts the hypothesis class.
+\end{solutionbox}
 
-\subsubsection{3. Solution Plan}
+\subsection{Problem B5: AI Proof Audit}
+
+\textbf{Question.}
+\newline
+An AI proof counts arbitrary change points and concludes a growth function for
+quadratic thresholds. Explain the flaw and replace it with the correct
+root-based reasoning.
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We must diagnose why counting change points alone is mathematically insufficient
+for quadratic thresholds.
+
+\subsubsection{Explanation}
+
+The issue is that not every pattern with a small number of sign changes comes
+from a quadratic. The shape of the polynomial matters: the positive set must be
+an interval or the complement of an interval.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Identify the flaw: arbitrary change-point counting ignores the shape of
-  quadratic level sets.
-  \item Explain the missing constraint: a quadratic has at most two roots and a
-  fixed opening direction.
-  \item Replace the argument with the interval / complement-of-interval
-  classification from Problem B3.
-  \item Deduce the correct growth function from Problem B4.
+    \item Explain why free change-point counting overcounts.
+    \item State the actual structural constraint from Problem B3.
+    \item Deduce the correct growth function from Problem B4.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
-Suppose an AI argument claims that because a quadratic has at most two roots, we
-can choose up to two sign-change locations arbitrarily among the \(n-1\) sample
-gaps, and therefore count all strings with at most two changes. This is
-incorrect.
+\subsubsection{Formal Solution / Proof}
 
-The flaw is that ``at most two changes'' is necessary but not sufficient for a
-quadratic threshold. The polynomial shape matters. For example, a pattern like
-\[
-0,1,1,0
-\]
-has two changes and is realizable, but a pattern like
-\[
-1,0,0,1
-\]
-is also realizable for a completely different geometric reason: it comes from a
-quadratic that opens upward and is nonnegative outside an interval. Counting
-``change points'' alone misses this distinction and does not encode whether the
-quadratic is selecting an interval or its complement.
+The AI proof is invalid because it counts change locations as if they could be
+chosen independently. That ignores the geometry of quadratics. A quadratic
+polynomial has at most two real roots, and depending on the sign of the leading
+coefficient, the region where \(q(x)\ge 0\) is either one interval or the
+complement of one interval.
 
-The correct statement is the one proved in Problem B3: on an ordered sample, the
-realisable \(1\)-sets are exactly the empty set, one contiguous block, or a
-prefix together with a suffix. Consequently, by Problem B4,
+Therefore the correct restriction patterns are not ``all strings with at most
+two changes.'' The correct statement from Problem B3 is that the realizable
+\(1\)-sets are exactly:
+\begin{itemize}[leftmargin=2.5em]
+    \item the empty set,
+    \item one contiguous block,
+    \item a prefix together with a suffix.
+\end{itemize}
+Using this classification, the correct growth function is
 \[
 \growth_{\classB}(n)=n^2-n+2.
 \]
 
-\subsubsection{5. Conclusion}
-The invalid AI proof overcounts by ignoring the interval structure imposed by
-quadratic roots. The right argument is root-based and shape-based, not arbitrary
-change-point counting.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+The flawed AI proof ignores the shape constraints imposed by quadratics. The
+correct proof must be root-based rather than arbitrary-change-based.
+
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-The small-\(n\) enumeration confirms the exact formula \(n^2-n+2\) and serves
-as a quick check against incorrect overcounting heuristics.
+\subsubsection{Computational Check}
 
-\section{Part C}
+The enumeration script supports the corrected formula on small values of \(n\).
 
-\subsection{Problem C1}
+\end{solutionbox}
 
-\subsubsection{1. Restatement}
-Write an AI usage report addressing where AI was used, which suggestions were
-accepted, which suggestions were rejected or modified, how correctness was
-verified, and how the workflow improved over the course of the assignment.
+\section{Part C: AI Usage Report}
 
-\subsubsection{2. Explanation}
-This part is reflective rather than mathematical. The goal is to document how AI
-contributed to the assignment while still making clear that the final arguments,
-counts, and conclusions were checked carefully.
+\textbf{Question.}
+\newline
+Write a short report describing where AI was used, an accepted suggestion, a
+rejected or modified suggestion, how correctness was verified, and how the
+workflow improved.
 
-\subsubsection{3. Solution Plan}
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+This part asks for a reflective description of how AI contributed to the work
+without replacing mathematical verification.
+
+\subsubsection{Explanation}
+
+The goal is to show judgment: where AI was helpful, where it needed correction,
+and what independent checks were used to make sure the final results were
+correct.
+
+\subsubsection{Solution Plan}
+
 \begin{enumerate}[leftmargin=2.5em]
-  \item Describe where AI entered the workflow.
-  \item Give one accepted suggestion and why it was useful.
-  \item Give one rejected or revised suggestion and why it needed correction.
-  \item Explain the verification process.
-  \item Summarize workflow improvements.
+    \item Describe where AI was used in the workflow.
+    \item Give one accepted suggestion.
+    \item Give one rejected or revised suggestion.
+    \item Explain the verification process.
+    \item Summarize workflow improvements.
 \end{enumerate}
 
-\subsubsection{4. Formal Solution / Proof}
-I used AI in several parts of this assignment. For the mathematical write-up, I
-used it to help structure proofs, organize the document, and identify cleaner
-ways to present the combinatorial cases. For the computational support, I used
-it to help design a small enumeration script that checks the growth-function
-formulas on small values of \(n\). I also used AI to identify which parts of the
-assignment were the best targets for Lean formalization.
+\subsubsection{Formal Solution / Proof}
 
-One suggestion I accepted was to organize each problem into the sequence
-``restatement, explanation, plan, proof, conclusion.'' I kept this structure
-because it made the final document much easier to audit: the intuition is
-separated from the rigorous proof, and each formula appears only after the
-relevant case split has been explained.
+For this assignment, I used AI mainly for organization, proof drafting, and
+small computational support. In the proof-writing stage, AI helped turn rough
+ideas into a cleaner structure with definitions, claims, and proofs. In the
+verification stage, AI helped suggest a small brute-force enumeration script for
+checking the growth-function formulas on small values of \(n\). I also used AI
+to identify which parts of the assignment were the most natural targets for Lean
+formalization.
 
-One suggestion I rejected or modified concerned proof style. An earlier draft
-counted restrictions by talking loosely about possible ``switch points'' in the
-binary labeling. I revised that approach because it risked overcounting. For the
-two-interval class, the correct invariant is the number of runs of \(1\)s, and
-for the quadratic class the correct invariant comes from roots and the shape of
-the nonnegative region. Replacing the switch-point language with the more
-structured run-based and root-based arguments made the counting precise.
+One suggestion I accepted was the idea of using a small-\(n\) computational
+check for the exact growth formulas. I accepted this because the formulas in
+Parts A and B are exact, so enumeration on \(n\le 6\) is a meaningful sanity
+check. It does not replace proof, but it helps catch overcounting and missed
+cases.
 
-I verified correctness in several ways. First, I checked each combinatorial
-formula against the structural characterization proved immediately before it.
-Second, I used small-\(n\) computational enumeration to confirm the formulas
+One suggestion I rejected or heavily modified was an earlier proof sketch that
+counted label changes too loosely. That approach risked overcounting because it
+did not properly encode interval structure in Part A or root structure in Part
+B. I replaced it with arguments based on runs of \(1\)s for the two-interval
+class and on the sign pattern of quadratics for the quadratic-threshold class.
+
+I verified correctness in several ways. First, every counting formula was
+derived from a structural characterization proved immediately before it. Second,
+I checked the formulas computationally on small samples:
 \[
-\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}
-\qquad\text{and}\qquad
-\growth_{\classB}(n)=n^2-n+2
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4},
+\qquad
+\growth_{\classB}(n)=n^2-n+2.
 \]
-for \(n \le 6\). Third, I cross-checked the VC-dimension conclusions against the
-exact values of the growth functions at the critical sample sizes. Finally, I
-made sure the Lean targets matched the mathematically central statements rather
-than peripheral bookkeeping lemmas.
+Third, I cross-checked the VC-dimension conclusions against the critical growth
+values:
+\[
+\growth_{\classA}(4)=16,\ \growth_{\classA}(5)=31,
+\qquad
+\growth_{\classB}(3)=8,\ \growth_{\classB}(4)=14.
+\]
+Finally, for Lean, I focused on the mathematically central statements that are
+most reusable rather than trying to formalize every combinatorial detail.
 
-The workflow improved as the assignment progressed. Early on, AI was most useful
-for brainstorming proof organization and computational checks. Later, I used it
-more selectively: mainly for tightening exposition, flagging potential
-overcounting, and isolating the statements that were worth formalizing in Lean.
-This made the overall process more disciplined and reduced the amount of time
-spent rewriting informal arguments after the fact.
+The workflow improved over time. Early in the process, AI was most useful for
+brainstorming structure and possible proof strategies. Later, I used it more
+selectively: mostly to tighten exposition, catch overstatements, and package the
+final work into a clean submission format. That made the final pass much more
+efficient.
 
-\subsubsection{5. Conclusion}
-AI was useful for organization, drafting, and small verification support, but
-the final correctness relied on explicit proof checking, small-case computation,
-and careful revision of any overly loose or overconfident suggestions.
+\subsubsection{Conclusion}
 
-\subsubsection{6. Lean Formalization}
+AI was useful for organization, drafting, and sanity checks, but the final
+correctness of the assignment depended on explicit proofs, independent
+verification, and careful revision of any suggestions that were too loose.
+
+\subsubsection{Lean Formalization}
+
 Lean: NO.
 
-\subsubsection{7. Computational Check (if applicable)}
-The computational checks mentioned in this report are implemented in
-\texttt{hw2/code/enumeration\_check.py}, with outputs stored under
-\texttt{hw2/figures/}.
+\subsubsection{Computational Check}
+
+The computational support mentioned here appears in
+\texttt{hw2/code/enumeration\_check.py}, with outputs in \texttt{hw2/figures/}.
+
+\end{solutionbox}
 
 \section{Repository Artifacts and Mapping}
 
 \subsection{Supporting Repository Artifacts}
 
-The supporting files for this assignment are:
 \begin{itemize}[leftmargin=2.5em]
-  \item \texttt{hw2/writeup.tex}: the source of this write-up.
-  \item \texttt{hw2/writeup.pdf}: the compiled submission PDF.
-  \item \texttt{hw2/lean/vc\_dimension\_bound.lean}: Lean target for Problem B1.
-  \item \texttt{hw2/lean/quadratic\_embedding.lean}: Lean target for Problem B2.
-  \item \texttt{hw2/code/enumeration\_check.py}: small-case verification script
-  for Problems A2 and B4.
-  \item \texttt{hw2/figures/small\_n\_growth.csv}: generated table of small-\(n\)
-  growth values.
-  \item \texttt{hw2/figures/small\_n\_growth.png}: generated comparison plot.
+    \item \texttt{hw2/writeup.tex}: source file for the write-up.
+    \item \texttt{hw2/writeup.pdf}: compiled PDF draft.
+    \item \texttt{hw2/lean/vc\_dimension\_bound.lean}: Lean target for Problem B1.
+    \item \texttt{hw2/lean/quadratic\_embedding.lean}: Lean target for Problem B2.
+    \item \texttt{hw2/code/enumeration\_check.py}: small-\(n\) verification for
+    Problems A2 and B4.
+    \item \texttt{hw2/figures/small\_n\_growth.csv}: table of computed values.
+    \item \texttt{hw2/figures/small\_n\_growth.png}: small-\(n\) growth plot.
 \end{itemize}
 
 \subsection{Write-Up to Repository Mapping}
 
-\begin{center}
-\begin{tabular}{p{0.24\textwidth} p{0.64\textwidth}}
-\toprule
-Write-up section & Supporting artifact \\
-\midrule
-Problem A2 & \texttt{hw2/code/enumeration\_check.py} and
-\texttt{hw2/figures/small\_n\_growth.csv} \\
-Problem A3 & \texttt{hw2/code/enumeration\_check.py} for the values
-\(\growth_{\classA}(4)=16\) and \(\growth_{\classA}(5)=31\) \\
-Problem B1 & \texttt{hw2/lean/vc\_dimension\_bound.lean} \\
-Problem B2 & \texttt{hw2/lean/quadratic\_embedding.lean} \\
-Problem B4 & \texttt{hw2/code/enumeration\_check.py},
-\texttt{hw2/figures/small\_n\_growth.csv}, and
-\texttt{hw2/figures/small\_n\_growth.png} \\
-All parts & \texttt{hw2/writeup.tex} and \texttt{hw2/writeup.pdf} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{Lean Targets Summary}
-
-The parts that should be formalized in Lean are:
 \begin{itemize}[leftmargin=2.5em]
-  \item Problem B1: the general theorem that a class represented by homogeneous
-  linear thresholds in \(\R^D\) has VC dimension at most \(D\).
-  \item Problem B2: the quadratic embedding
-  \[
-  a x^2 + b x + c = \langle (a,b,c),(x^2,x,1)\rangle.
-  \]
+    \item Problem A2 \(\rightarrow\)
+    \texttt{hw2/code/enumeration\_check.py},
+    \texttt{hw2/figures/small\_n\_growth.csv}
+    \item Problem B1 \(\rightarrow\)
+    \texttt{hw2/lean/vc\_dimension\_bound.lean}
+    \item Problem B2 \(\rightarrow\)
+    \texttt{hw2/lean/quadratic\_embedding.lean}
+    \item Problem B4 \(\rightarrow\)
+    \texttt{hw2/code/enumeration\_check.py},
+    \texttt{hw2/figures/small\_n\_growth.png}
+    \item Full submission draft \(\rightarrow\)
+    \texttt{hw2/writeup.tex} and \texttt{hw2/writeup.pdf}
 \end{itemize}
 
-The combinatorial counting arguments in Parts A and B are good mathematical
-targets in principle, but they are not the most efficient first formalizations
-for this repository. The linear-representation results are cleaner and more
-reusable.
+\subsection{Lean Targets}
+
+The most appropriate Lean targets in this assignment are:
+\begin{itemize}[leftmargin=2.5em]
+    \item the general linear-representation VC-dimension upper bound from
+    Problem B1,
+    \item the quadratic embedding identity from Problem B2.
+\end{itemize}
+These are the cleanest and most reusable formal statements in the assignment.
 
 \end{document}
+
+\subsection{Problem A2: Growth Function}
+
+\textbf{Question.}
+\newline
+Using the characterization from Problem A1, compute the growth function
+\[
+\growth_{\classA}(n),
+\]
+the number of distinct labelings of \(n\) ordered points realizable by
+\(\classA\).
+
+You must count separately:
+\begin{enumerate}[leftmargin=2.5em]
+    \item no runs of \(1\)s,
+    \item exactly one run of \(1\)s,
+    \item exactly two runs of \(1\)s.
+\end{enumerate}
+
+\begin{solutionbox}
+
+\subsubsection{Restatement}
+
+We want an exact formula for the number of binary strings of length \(n\) with
+at most two runs of \(1\)s.
+
+\subsubsection{Explanation}
+
+Problem A1 turns the growth-function problem into a counting problem. Since the
+three cases above are disjoint and exhaustive, we can count them separately and
+add the results without overcounting.
+
+\subsubsection{Solution Plan}
+
+\begin{enumerate}[leftmargin=2.5em]
+    \item Count the all-zero labeling.
+    \item Count one-run labelings by choosing the first and last index of the
+    run.
+    \item Count two-run labelings by choosing four boundary positions.
+    \item Add the three counts and simplify.
+\end{enumerate}
+
+\subsubsection{Formal Solution / Proof}
+
+\begin{claim}
+For every \(n\ge 1\),
+\[
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}.
+\]
+\end{claim}
+
+\begin{proof}
+\leavevmode\\
+By Problem A1, realizable strings are exactly those with at most two runs of
+\(1\)s.
+
+\textbf{Case 1: no runs of \(1\)s.}
+
+There is exactly one such string:
+\[
+00\cdots0.
+\]
+So this contributes \(1\).
+
+\textbf{Case 2: exactly one run of \(1\)s.}
+
+Such a string is determined by choosing indices \(a\le b\) and declaring
+\[
+y_i=
+\begin{cases}
+1, & a\le i\le b,\\
+0, & \text{otherwise}.
+\end{cases}
+\]
+Hence the number of one-run strings is the number of pairs
+\[
+1\le a\le b\le n,
+\]
+which is
+\[
+\binom{n+1}{2}.
+\]
+
+\textbf{Case 3: exactly two runs of \(1\)s.}
+
+A two-run string has the form
+\[
+0\cdots 0\,1\cdots 1\,0\cdots 0\,1\cdots 1\,0\cdots 0.
+\]
+It is uniquely specified by choosing four boundary positions
+\[
+0\le s_1<t_1<s_2<t_2\le n
+\]
+from the \(n+1\) gaps before, between, and after the sample points. The first
+run starts after boundary \(s_1\) and ends at boundary \(t_1\); the second run
+starts after boundary \(s_2\) and ends at boundary \(t_2\). This gives a
+bijection between two-run strings and \(4\)-element subsets of the \(n+1\)
+boundary positions. Therefore the number of two-run strings is
+\[
+\binom{n+1}{4}.
+\]
+
+Adding the three disjoint cases yields
+\[
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}.
+\]
+\end{proof}
+
+\subsubsection{Conclusion}
+
+The exact growth function is
+\[
+\growth_{\classA}(n)=1+\binom{n+1}{2}+\binom{n+1}{4}.
+\]
+
+\subsubsection{Lean Formalization}
+
+Lean: OPTIONAL.
+
+\subsubsection{Computational Check}
+
+For \(n=1,\dots,6\), the script verifies the values
+\[
+2,\ 4,\ 8,\ 16,\ 31,\ 57.
+\]
+
+\end{solutionbox}

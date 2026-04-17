@@ -1,0 +1,88 @@
+\contentsline {section}{\numberline {1}Part A: Restriction Patterns for Two Intervals}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Problem Overview}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Problem A1: Restriction Patterns}{2}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Restatement}{2}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Explanation}{2}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Solution Plan}{2}{subsubsection.1.2.3}%
+\contentsline {subsubsection}{\numberline {1.2.4}Formal Solution / Proof}{2}{subsubsection.1.2.4}%
+\contentsline {subsubsection}{\numberline {1.2.5}Conclusion}{3}{subsubsection.1.2.5}%
+\contentsline {subsubsection}{\numberline {1.2.6}Lean Formalization}{4}{subsubsection.1.2.6}%
+\contentsline {subsubsection}{\numberline {1.2.7}Computational Check}{4}{subsubsection.1.2.7}%
+\contentsline {subsection}{\numberline {1.3}Problem A3: VC Dimension and Halving Bound}{4}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Restatement}{4}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Explanation}{4}{subsubsection.1.3.2}%
+\contentsline {subsubsection}{\numberline {1.3.3}Solution Plan}{4}{subsubsection.1.3.3}%
+\contentsline {subsubsection}{\numberline {1.3.4}Formal Solution / Proof}{4}{subsubsection.1.3.4}%
+\contentsline {subsubsection}{\numberline {1.3.5}Conclusion}{5}{subsubsection.1.3.5}%
+\contentsline {subsubsection}{\numberline {1.3.6}Lean Formalization}{5}{subsubsection.1.3.6}%
+\contentsline {subsubsection}{\numberline {1.3.7}Computational Check}{5}{subsubsection.1.3.7}%
+\contentsline {subsection}{\numberline {1.4}Problem A4: Tightness of Sauer--Shelah}{5}{subsection.1.4}%
+\contentsline {subsubsection}{\numberline {1.4.1}Restatement}{6}{subsubsection.1.4.1}%
+\contentsline {subsubsection}{\numberline {1.4.2}Explanation}{6}{subsubsection.1.4.2}%
+\contentsline {subsubsection}{\numberline {1.4.3}Solution Plan}{6}{subsubsection.1.4.3}%
+\contentsline {subsubsection}{\numberline {1.4.4}Formal Solution / Proof}{6}{subsubsection.1.4.4}%
+\contentsline {subsubsection}{\numberline {1.4.5}Conclusion}{7}{subsubsection.1.4.5}%
+\contentsline {subsubsection}{\numberline {1.4.6}Lean Formalization}{7}{subsubsection.1.4.6}%
+\contentsline {subsubsection}{\numberline {1.4.7}Computational Check}{7}{subsubsection.1.4.7}%
+\contentsline {subsection}{\numberline {1.5}Problem A5: AI Proof Audit}{7}{subsection.1.5}%
+\contentsline {subsubsection}{\numberline {1.5.1}Restatement}{7}{subsubsection.1.5.1}%
+\contentsline {subsubsection}{\numberline {1.5.2}Explanation}{7}{subsubsection.1.5.2}%
+\contentsline {subsubsection}{\numberline {1.5.3}Solution Plan}{7}{subsubsection.1.5.3}%
+\contentsline {subsubsection}{\numberline {1.5.4}Formal Solution / Proof}{7}{subsubsection.1.5.4}%
+\contentsline {subsubsection}{\numberline {1.5.5}Conclusion}{7}{subsubsection.1.5.5}%
+\contentsline {subsubsection}{\numberline {1.5.6}Lean Formalization}{8}{subsubsection.1.5.6}%
+\contentsline {subsubsection}{\numberline {1.5.7}Computational Check}{8}{subsubsection.1.5.7}%
+\contentsline {section}{\numberline {2}Part B: Quadratic Thresholds}{8}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Problem Overview}{8}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Problem B1: General Upper Bound for Linear Representations}{8}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Restatement}{8}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Explanation}{8}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Solution Plan}{8}{subsubsection.2.2.3}%
+\contentsline {subsubsection}{\numberline {2.2.4}Formal Solution / Proof}{8}{subsubsection.2.2.4}%
+\contentsline {subsubsection}{\numberline {2.2.5}Conclusion}{9}{subsubsection.2.2.5}%
+\contentsline {subsubsection}{\numberline {2.2.6}Lean Formalization}{9}{subsubsection.2.2.6}%
+\contentsline {subsubsection}{\numberline {2.2.7}Computational Check}{9}{subsubsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.3}Problem B2: Quadratic Transformation}{9}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Restatement}{10}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Explanation}{10}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Solution Plan}{10}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.4}Formal Solution / Proof}{10}{subsubsection.2.3.4}%
+\contentsline {subsubsection}{\numberline {2.3.5}Conclusion}{10}{subsubsection.2.3.5}%
+\contentsline {subsubsection}{\numberline {2.3.6}Lean Formalization}{10}{subsubsection.2.3.6}%
+\contentsline {subsubsection}{\numberline {2.3.7}Computational Check}{10}{subsubsection.2.3.7}%
+\contentsline {subsection}{\numberline {2.4}Problem B3: Restriction Patterns}{11}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Restatement}{11}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Explanation}{11}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Solution Plan}{11}{subsubsection.2.4.3}%
+\contentsline {subsubsection}{\numberline {2.4.4}Formal Solution / Proof}{11}{subsubsection.2.4.4}%
+\contentsline {subsubsection}{\numberline {2.4.5}Conclusion}{12}{subsubsection.2.4.5}%
+\contentsline {subsubsection}{\numberline {2.4.6}Lean Formalization}{12}{subsubsection.2.4.6}%
+\contentsline {subsubsection}{\numberline {2.4.7}Computational Check}{12}{subsubsection.2.4.7}%
+\contentsline {subsection}{\numberline {2.5}Problem B4: Growth Function and VC Dimension}{12}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Restatement}{12}{subsubsection.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Explanation}{12}{subsubsection.2.5.2}%
+\contentsline {subsubsection}{\numberline {2.5.3}Solution Plan}{12}{subsubsection.2.5.3}%
+\contentsline {subsubsection}{\numberline {2.5.4}Formal Solution / Proof}{13}{subsubsection.2.5.4}%
+\contentsline {subsubsection}{\numberline {2.5.5}Conclusion}{14}{subsubsection.2.5.5}%
+\contentsline {subsubsection}{\numberline {2.5.6}Lean Formalization}{14}{subsubsection.2.5.6}%
+\contentsline {subsubsection}{\numberline {2.5.7}Computational Check}{14}{subsubsection.2.5.7}%
+\contentsline {subsection}{\numberline {2.6}Problem B5: AI Proof Audit}{14}{subsection.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}Restatement}{14}{subsubsection.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}Explanation}{14}{subsubsection.2.6.2}%
+\contentsline {subsubsection}{\numberline {2.6.3}Solution Plan}{14}{subsubsection.2.6.3}%
+\contentsline {subsubsection}{\numberline {2.6.4}Formal Solution / Proof}{14}{subsubsection.2.6.4}%
+\contentsline {subsubsection}{\numberline {2.6.5}Conclusion}{15}{subsubsection.2.6.5}%
+\contentsline {subsubsection}{\numberline {2.6.6}Lean Formalization}{15}{subsubsection.2.6.6}%
+\contentsline {subsubsection}{\numberline {2.6.7}Computational Check}{15}{subsubsection.2.6.7}%
+\contentsline {section}{\numberline {3}Part C: AI Usage Report}{15}{section.3}%
+\contentsline {subsubsection}{\numberline {3.0.1}Restatement}{15}{subsubsection.3.0.1}%
+\contentsline {subsubsection}{\numberline {3.0.2}Explanation}{15}{subsubsection.3.0.2}%
+\contentsline {subsubsection}{\numberline {3.0.3}Solution Plan}{15}{subsubsection.3.0.3}%
+\contentsline {subsubsection}{\numberline {3.0.4}Formal Solution / Proof}{15}{subsubsection.3.0.4}%
+\contentsline {subsubsection}{\numberline {3.0.5}Conclusion}{16}{subsubsection.3.0.5}%
+\contentsline {subsubsection}{\numberline {3.0.6}Lean Formalization}{16}{subsubsection.3.0.6}%
+\contentsline {subsubsection}{\numberline {3.0.7}Computational Check}{16}{subsubsection.3.0.7}%
+\contentsline {section}{\numberline {4}Repository Artifacts and Mapping}{16}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Supporting Repository Artifacts}{16}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Write-Up to Repository Mapping}{17}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Lean Targets}{17}{subsection.4.3}%
