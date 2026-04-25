@@ -1,0 +1,971 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{tabularx}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black, citecolor=blue!60!black}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{DSC 190/291 Assignment 3}
+\rhead{Dhruv Patel}
+\cfoot{\thepage}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+
+\newtheorem{claim}{Claim}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\calD}{\mathcal{D}}
+\newcommand{\calH}{\mathcal{H}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+\newcommand{\GammaH}{\Gamma_{\mathcal{H}}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\eps}{\varepsilon}
+
+\tcbset{
+  colback=white,
+  colframe=black!75,
+  boxrule=0.8pt,
+  arc=2pt,
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{solutionbox}{
+    colback=white,
+    colframe=black,
+    boxrule=0.5pt,
+    breakable
+}
+
+\title{\textbf{DSC 190/291 Assignment 3}\\Detailed Write-Up}
+\author{Dhruv Patel}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =======================================================
+\section{Part A: A Mini-Course on Concentration Inequalities}
+% =======================================================
+In the Week 3 lecture we proved the following i.i.d. growth-function ERM guarantee. Let $\hat h \in \arg\min_{h\in\mathcal H} L_n(h)$. Then with high probability over $S\sim \mathcal D^n$,
+\[
+L_{\mathcal D}(\hat h)
+\le
+\inf_{h\in\mathcal H} L_{\mathcal D}(h)
++
+O\!\left(\sqrt{\frac{\log \Gamma_{\mathcal H}(2n)+\log(1/\delta)}{n}}\right).
+\]
+
+The learning-theoretic structure of the proof was covered in lecture, but several concentration inequalities were used without proof. The inequalities to learn in this mini-course are:
+\begin{itemize}[leftmargin=2em]
+\item Hoeffding's inequality,
+\item Hoeffding's inequality for sampling without replacement,
+\item McDiarmid's inequality,
+\item Bernstein's inequality.
+\end{itemize}
+
+\textbf{Goal.} Create a short mini-course that teaches these four concentration inequalities well enough to complete the Week 3 ERM proof end-to-end.
+
+\vspace{1em}
+
+\begin{enumerate}
+
+\item \textbf{The Concept of Concentration.}
+Explain what concentration inequalities are as a class of statements: what kind of random quantity they describe, what it means for such a quantity to concentrate, and why we should expect this phenomenon for sums and well-behaved functions of many independent random variables. Use at least one concrete example to ground the discussion. What is the intuition behind concentration inequalities?
+
+\item \textbf{The Common Technique: MGF Method and Chernoff Bounds.}
+Present the moment-generating-function method that underlies the proofs of Hoeffding and Bernstein, including the Chernoff bound as a general template. Explain why bounding the MGF translates into a tail bound and what one needs to control about the MGF to obtain a useful bound. Introduce the bounded-differences or martingale variant used in McDiarmid's inequality.
+
+\item \textbf{Statements, Assumptions, and Consequences.}
+For each of the four inequalities, give a precise statement, state the assumptions under which it holds, and explain what kind of random quantity it controls and how strong the resulting tail bound is. Compare the four concentration inequalities, including what additional structure Bernstein exploits beyond Hoeffding and what changes when sampling is without replacement.
+
+\item \textbf{Proofs of the Inequalities.}
+Derive each of the four inequalities. Use the MGF method wherever it applies and the bounded-differences method for McDiarmid. Identify whether there is a common template that unifies the proofs.
+
+\item \textbf{Connection to the ERM Guarantee.}
+Combine the previous results to give a full proof of the i.i.d. ERM guarantee stated above.
+
+\end{enumerate}
+\begin{solutionbox}
+
+\paragraph{1. The Concept of Concentration}
+A concentration inequality is a theorem that controls how likely it is for a random quantity to deviate far from its mean, median, or another typical value. The random quantity is usually either:
+\begin{itemize}[leftmargin=2em]
+    \item a sum of random variables, such as $S_n=\sum_{i=1}^n X_i$, or
+    \item a function of many random inputs, such as $f(X_1,\dots,X_n)$.
+\end{itemize}
+
+To say that a random quantity \emph{concentrates} means that it is very unlikely to be far from its expectation. A typical concentration statement has the form
+\[
+\Pbb\bigl(|Z-\E Z|\ge t\bigr) \le \text{something exponentially small in } t.
+\]
+When the right-hand side decays exponentially in $t^2$ or in $t$, the distribution of $Z$ is sharply peaked around its mean.
+
+The intuition is that if many weakly random effects are averaged together, then positive and negative fluctuations tend to cancel. Also, if changing one coordinate cannot change the output by much, then no single sample can create a huge deviation on its own. These two ideas explain why sums and bounded-sensitivity functions often concentrate.
+
+A concrete example is the sample mean of Bernoulli random variables. Suppose $X_1,\dots,X_n$ are i.i.d. Bernoulli$(p)$, so each $X_i\in\{0,1\}$ and $\E[X_i]=p$. Then
+\[
+\bar X_n = \frac1n\sum_{i=1}^n X_i
+\]
+is the empirical fraction of successes. Hoeffding's inequality gives
+\[
+\Pbb\bigl(|\bar X_n-p|\ge \eps\bigr) \le 2e^{-2n\eps^2}.
+\]
+This means the empirical average stays close to the true mean with overwhelming probability. The natural scale is therefore
+\[
+|\bar X_n-p| = O\!\left(\sqrt{\frac{\log(1/\delta)}{n}}\right)
+\]
+with probability at least $1-\delta$.
+
+So the main lesson is: concentration inequalities formalize the idea that averaging stabilizes noise, and they do so with explicit quantitative tail bounds.
+ \medskip
+\paragraph{2. The MGF Method and Chernoff Bounds}
+The moment-generating-function method starts from the simple observation that for any random variable $Z$, any threshold $t$, and any $\lambda>0$,
+\[
+\Pbb(Z\ge t)
+=
+\Pbb(e^{\lambda Z}\ge e^{\lambda t}).
+\]
+Applying Markov's inequality to the nonnegative random variable $e^{\lambda Z}$ gives
+\[
+\Pbb(Z\ge t)
+\le e^{-\lambda t}\,\E[e^{\lambda Z}].
+\]
+This is the \emph{Chernoff bound template}. Therefore, if we can control the moment-generating function (MGF)
+\[
+M_Z(\lambda)=\E[e^{\lambda Z}],
+\]
+then we immediately obtain a tail bound.
+
+The reason this is useful is that MGFs factor over independent sums. If
+\[
+Z=\sum_{i=1}^n Z_i
+\]
+and the $Z_i$ are independent, then
+\[
+\E[e^{\lambda Z}] = \prod_{i=1}^n \E[e^{\lambda Z_i}].
+\]
+So instead of bounding one complicated random variable at once, we can bound each factor separately.
+
+The most useful MGF control is a quadratic upper bound such as
+\[
+\E[e^{\lambda(Z-\E Z)}] \le e^{c\lambda^2}.
+\]
+Substituting this into the Chernoff template yields
+\[
+\Pbb(Z-\E Z\ge t)
+\le
+\inf_{\lambda>0} \exp(-\lambda t + c\lambda^2).
+\]
+Optimizing in $\lambda$ produces a Gaussian-type tail bound of the form
+\[
+\Pbb(Z-\E Z\ge t)\le e^{-t^2/(4c)}.
+\]
+This is exactly the mechanism behind Hoeffding's inequality.
+
+Bernstein's inequality uses the same method, but with a more refined MGF estimate that keeps track of the variance in addition to the absolute bound on each summand. This produces a sharper bound when the variance is small.
+
+McDiarmid's inequality uses a bounded-differences version of the same idea. If $f(X_1,\dots,X_n)$ is a function of independent inputs, define the Doob martingale
+\[
+M_i = \E[f(X_1,\dots,X_n)\mid X_1,\dots,X_i], \qquad i=0,1,\dots,n.
+\]
+Then
+\[
+f(X_1,\dots,X_n)-\E[f] = \sum_{i=1}^n (M_i-M_{i-1}).
+\]
+If changing one coordinate changes $f$ by at most $c_i$, then each martingale increment is bounded by $c_i$, and the same exponential-moment argument applies. So McDiarmid is not based on a completely different proof strategy; it is the same Chernoff philosophy applied to martingale differences instead of directly to independent summands.
+ \medskip
+\paragraph{3. Statements, Assumptions, and Consequences}
+\textbf{(i) Hoeffding's inequality.}
+Let $X_1,\dots,X_n$ be independent and assume $a_i\le X_i\le b_i$ almost surely. If $S_n=\sum_{i=1}^n X_i$, then for all $t>0$,
+\[
+\Pbb(S_n-\E S_n\ge t)
+\le
+\exp\!\left(-\frac{2t^2}{\sum_{i=1}^n (b_i-a_i)^2}\right),
+\]
+and therefore
+\[
+\Pbb(|S_n-\E S_n|\ge t)
+\le
+2\exp\!\left(-\frac{2t^2}{\sum_{i=1}^n (b_i-a_i)^2}\right).
+\]
+This controls sums of independent bounded variables. The tail is sub-Gaussian.
+
+\medskip
+\textbf{(ii) Hoeffding for sampling without replacement.}
+Let $c_1,\dots,c_N\in[a,b]$ be a finite population. Sample $X_1,\dots,X_n$ uniformly without replacement, and let
+\[
+\mu = \frac1N\sum_{j=1}^N c_j, \qquad \bar X_n = \frac1n\sum_{i=1}^n X_i.
+\]
+Then for all $t>0$,
+\[
+\Pbb(|\bar X_n-\mu|\ge t)
+\le
+2\exp\!\left(-\frac{2nt^2}{(b-a)^2}\right).
+\]
+This has essentially the same tail behavior as ordinary Hoeffding, even though the draws are dependent. The dependence is favorable because sampling without replacement introduces negative dependence and therefore less variability.
+
+\medskip
+\textbf{(iii) McDiarmid's inequality.}
+Let $X_1,\dots,X_n$ be independent and let $f$ satisfy the bounded-differences condition:
+if two inputs differ only in coordinate $i$, then
+\[
+|f(x_1,\dots,x_n)-f(x_1,\dots,x_i',\dots,x_n)|\le c_i.
+\]
+Then for all $t>0$,
+\[
+\Pbb\bigl(f(X_1,\dots,X_n)-\E f\ge t\bigr)
+\le
+\exp\!\left(-\frac{2t^2}{\sum_{i=1}^n c_i^2}\right),
+\]
+and hence
+\[
+\Pbb\bigl(|f-\E f|\ge t\bigr)
+\le
+2\exp\!\left(-\frac{2t^2}{\sum_{i=1}^n c_i^2}\right).
+\]
+This controls general bounded-sensitivity functions of independent random variables. Hoeffding is a special case obtained by taking $f(x_1,\dots,x_n)=\sum_i x_i$.
+
+\medskip
+\textbf{(iv) Bernstein's inequality.}
+Let $X_1,\dots,X_n$ be independent mean-zero random variables, assume $|X_i|\le M$ almost surely, and define
+\[
+v=\sum_{i=1}^n \operatorname{Var}(X_i).
+\]
+Then for all $t>0$,
+\[
+\Pbb\left(\sum_{i=1}^n X_i\ge t\right)
+\le
+\exp\!\left(-\frac{t^2}{2(v+Mt/3)}\right),
+\]
+and therefore
+\[
+\Pbb\left(\left|\sum_{i=1}^n X_i\right|\ge t\right)
+\le
+2\exp\!\left(-\frac{t^2}{2(v+Mt/3)}\right).
+\]
+This controls sums of independent bounded variables, but unlike Hoeffding it exploits the actual variance.
+
+\medskip
+\textbf{Comparison.}
+\begin{itemize}[leftmargin=2em]
+    \item Hoeffding uses only boundedness.
+    \item Bernstein uses boundedness \emph{and} variance. If the variance is much smaller than the worst-case range, Bernstein is sharper.
+    \item McDiarmid extends Hoeffding from sums to general functions with bounded coordinate influence.
+    \item The without-replacement Hoeffding inequality applies to dependent sampling, but the dependence is favorable rather than harmful.
+\end{itemize}
+
+\medskip
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{0.96\linewidth}{@{}p{2.4cm} p{2.4cm} X p{1.9cm} X@{}}
+\toprule
+\textbf{Inequality} & \textbf{Applies To} & \textbf{Assumptions} & \textbf{Tail} & \textbf{Key Idea} \\
+\midrule
+Hoeffding 
+& $\sum X_i$ 
+& Independent and bounded 
+& Sub-Gaussian 
+& Uses only range bounds \\
+
+Without replacement 
+& Sample mean 
+& Finite population; sampled without replacement 
+& Sub-Gaussian 
+& Dependence is favorable \\
+
+McDiarmid 
+& $f(X_1,\dots,X_n)$ 
+& Independent inputs with bounded coordinate influence 
+& Sub-Gaussian 
+& Controls sensitivity to one coordinate \\
+
+Bernstein 
+& $\sum X_i$ 
+& Independent, bounded, and variance-controlled 
+& Sub-exponential 
+& Improves Hoeffding when variance is small \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\medskip
+
+So the main extra structure in Bernstein is variance information, while the main change in without-replacement Hoeffding is that one replaces independence by a special kind of dependence that still preserves concentration.
+ \medskip
+\paragraph{4. Proofs of the Inequalities}
+\subsubsection*{Hoeffding's lemma}
+The key MGF estimate is the following lemma: if $X\in[a,b]$ almost surely and $\E[X]=\mu$, then for all $\lambda\in\R$,
+\[
+\E[e^{\lambda(X-\mu)}]
+\le
+\exp\!\left(\frac{\lambda^2(b-a)^2}{8}\right).
+\]
+This follows from convexity of the exponential function and is the engine behind Hoeffding's inequality.
+
+\subsubsection*{Proof of Hoeffding's inequality}
+Let $Y_i=X_i-\E[X_i]$. Then $\E[Y_i]=0$, and for any $\lambda>0$,
+\[
+\Pbb\left(\sum_{i=1}^n Y_i\ge t\right)
+\le
+ e^{-\lambda t}\E\left[e^{\lambda\sum_i Y_i}\right].
+\]
+By independence,
+\[
+\E\left[e^{\lambda\sum_i Y_i}\right]
+=
+\prod_{i=1}^n \E[e^{\lambda Y_i}]
+\le
+\prod_{i=1}^n \exp\!\left(\frac{\lambda^2(b_i-a_i)^2}{8}\right)
+=
+\exp\!\left(\frac{\lambda^2}{8}\sum_{i=1}^n (b_i-a_i)^2\right).
+\]
+Therefore
+\[
+\Pbb\left(\sum_{i=1}^n Y_i\ge t\right)
+\le
+\exp\!\left(-\lambda t + \frac{\lambda^2}{8}\sum_{i=1}^n (b_i-a_i)^2\right).
+\]
+Optimizing in $\lambda$ gives
+\[
+\lambda^* = \frac{4t}{\sum_i (b_i-a_i)^2},
+\]
+which yields
+\[
+\Pbb\left(\sum_{i=1}^n Y_i\ge t\right)
+\le
+\exp\!\left(-\frac{2t^2}{\sum_i (b_i-a_i)^2}\right).
+\]
+Applying the same argument to $-Y_i$ and union bounding proves the two-sided version.
+
+\subsubsection*{Proof of Hoeffding without replacement}
+Let $c_1,\dots,c_N$ be the population values. Let $X_1,\dots,X_n$ be sampled without replacement and let $Y_1,\dots,Y_n$ be sampled with replacement from the same population. A classical comparison result due to Hoeffding states that for every convex function $\varphi$,
+\[
+\E\left[\varphi\!\left(\sum_{i=1}^n X_i\right)\right]
+\le
+\E\left[\varphi\!\left(\sum_{i=1}^n Y_i\right)\right].
+\]
+Take $\varphi(u)=e^{\lambda u}$. Then the MGF of the without-replacement sum is bounded above by the MGF of the corresponding i.i.d. sum. Since ordinary Hoeffding applies to the i.i.d. case, the same tail bound follows for the without-replacement sample mean.
+
+\subsubsection*{Proof of McDiarmid's inequality}
+Let
+\[
+Z=f(X_1,\dots,X_n)
+\]
+and define the Doob martingale
+\[
+M_i = \E[Z\mid X_1,\dots,X_i], \qquad i=0,1,\dots,n.
+\]
+Then
+\[
+Z-\E[Z] = \sum_{i=1}^n D_i,
+\qquad
+D_i=M_i-M_{i-1}.
+\]
+The bounded-differences assumption implies $|D_i|\le c_i$ almost surely. Applying the conditional version of Hoeffding's lemma to each martingale increment yields
+\[
+\E[e^{\lambda(Z-\E Z)}]
+\le
+\exp\!\left(\frac{\lambda^2}{8}\sum_{i=1}^n c_i^2\right).
+\]
+Now the same Chernoff optimization as before gives
+\[
+\Pbb(Z-\E Z\ge t)
+\le
+\exp\!\left(-\frac{2t^2}{\sum_{i=1}^n c_i^2}\right),
+\]
+and the two-sided version follows by symmetry.
+
+\subsubsection*{Proof of Bernstein's inequality}
+Let $X_1,\dots,X_n$ be independent, mean zero, and satisfy $|X_i|\le M$. Expanding the exponential power series and using $\E[X_i]=0$ gives
+\[
+\E[e^{\lambda X_i}] = 1+\sum_{k\ge 2}\frac{\lambda^k\E[X_i^k]}{k!}.
+\]
+Because $|X_i|\le M$, for $k\ge 2$ we have $|X_i|^k\le M^{k-2}X_i^2$. Hence
+\[
+\E[e^{\lambda X_i}]
+\le
+1+\E[X_i^2]\sum_{k\ge2}\frac{\lambda^kM^{k-2}}{k!}.
+\]
+A standard bound on this series implies that for $0<\lambda<3/M$,
+\[
+\E[e^{\lambda X_i}]
+\le
+\exp\!\left(\frac{\lambda^2\E[X_i^2]}{2(1-\lambda M/3)}\right).
+\]
+By independence,
+\[
+\E\left[e^{\lambda\sum_i X_i}\right]
+\le
+\exp\!\left(\frac{\lambda^2 v}{2(1-\lambda M/3)}\right),
+\qquad
+v=\sum_i \operatorname{Var}(X_i).
+\]
+Applying Chernoff's bound and optimizing with
+\[
+\lambda = \frac{t}{v+Mt/3}
+\]
+produces
+\[
+\Pbb\left(\sum_{i=1}^n X_i\ge t\right)
+\le
+\exp\!\left(-\frac{t^2}{2(v+Mt/3)}\right).
+\]
+Again, the two-sided form follows by applying the same bound to the negative sum.
+
+\subsubsection*{Common template}
+Yes. All four proofs fit one template:
+\begin{enumerate}[leftmargin=2em]
+    \item center the random quantity,
+    \item apply the exponential Markov/Chernoff trick,
+    \item bound the MGF,
+    \item optimize over $\lambda$.
+\end{enumerate}
+The only difference is how the MGF is bounded: by boundedness, by negative dependence, by martingale bounded differences, or by variance-sensitive boundedness.
+ \medskip
+\paragraph{5. Connection to the ERM Guarantee}
+Let
+\[
+\hat h\in \arg\min_{h\in\calH} L_n(h).
+\]
+We want to prove that with probability at least $1-\delta$,
+\[
+L_{\calD}(\hat h)
+\le
+\inf_{h\in\calH} L_{\calD}(h)
++
+O\!\left(\sqrt{\frac{\log\GammaH(2n)+\log(1/\delta)}{n}}\right).
+\]
+
+\subsubsection*{Step 1: reduce ERM to uniform convergence}
+For any $h\in\calH$,
+\[
+L_{\calD}(\hat h)
+\le
+L_n(\hat h)+\sup_{g\in\calH}|L_{\calD}(g)-L_n(g)|.
+\]
+Since $\hat h$ minimizes empirical risk,
+\[
+L_n(\hat h)\le L_n(h).
+\]
+Also,
+\[
+L_n(h)\le L_{\calD}(h)+\sup_{g\in\calH}|L_{\calD}(g)-L_n(g)|.
+\]
+Combining these inequalities,
+\[
+L_{\calD}(\hat h)
+\le
+L_{\calD}(h)+2\sup_{g\in\calH}|L_{\calD}(g)-L_n(g)|.
+\]
+Since this holds for every $h\in\calH$,
+\[
+L_{\calD}(\hat h)
+\le
+\inf_{h\in\calH}L_{\calD}(h)+2\sup_{g\in\calH}|L_{\calD}(g)-L_n(g)|.
+\]
+So the problem reduces to bounding the uniform deviation term.
+
+\subsubsection*{Step 2: symmetrization}
+Let $S=(Z_1,\dots,Z_n)$ and let $S'=(Z_1',\dots,Z_n')$ be an independent ghost sample. Standard symmetrization gives
+\[
+\Pbb\left(\sup_{h\in\calH}|L_{\calD}(h)-L_n(h)|>\eps\right)
+\le
+2\Pbb\left(\sup_{h\in\calH}|L_n'(h)-L_n(h)|>\frac{\eps}{2}\right).
+\]
+Thus it suffices to compare two empirical averages built from the combined $2n$-sample.
+
+\subsubsection*{Step 3: condition on the combined sample and count label patterns}
+Condition on the multiset
+\[
+T=(Z_1,\dots,Z_n,Z_1',\dots,Z_n').
+\]
+For each $h\in\calH$, the quantity $L_n'(h)-L_n(h)$ depends only on the binary labeling pattern induced by $h$ on these $2n$ points. The number of distinct such patterns is at most
+\[
+\GammaH(2n).
+\]
+So even if $\calH$ is infinite, only finitely many label patterns matter once $T$ is fixed.
+
+\subsubsection*{Step 4: concentration for each fixed labeling pattern}
+Fix one label pattern on the $2n$ points. Then the difference
+\[
+L_n'(h)-L_n(h)
+\]
+can be viewed as the result of randomly splitting $2n$ fixed losses into two groups of size $n$. That is sampling without replacement. Therefore Hoeffding's inequality for sampling without replacement yields a bound of the form
+\[
+\Pbb\bigl(|L_n'(h)-L_n(h)|>\eps\mid T\bigr)
+\le
+2e^{-cn\eps^2}
+\]
+for an absolute constant $c>0$.
+
+\subsubsection*{Step 5: union bound over all patterns}
+Since there are at most $\GammaH(2n)$ distinct patterns, conditional on $T$ we have
+\[
+\Pbb\left(\sup_{h\in\calH}|L_n'(h)-L_n(h)|>\eps\mid T\right)
+\le
+2\GammaH(2n)e^{-cn\eps^2}.
+\]
+Removing the conditioning preserves the same bound:
+\[
+\Pbb\left(\sup_{h\in\calH}|L_n'(h)-L_n(h)|>\eps\right)
+\le
+2\GammaH(2n)e^{-cn\eps^2}.
+\]
+Symmetrization then gives
+\[
+\Pbb\left(\sup_{h\in\calH}|L_{\calD}(h)-L_n(h)|>\eps\right)
+\le
+4\GammaH(2n)e^{-cn\eps^2}.
+\]
+
+\subsubsection*{Step 6: solve for the deviation level}
+To make the right-hand side at most $\delta$, it is enough to choose $\eps$ so that
+\[
+4\GammaH(2n)e^{-cn\eps^2}\le \delta.
+\]
+Taking logarithms shows that
+\[
+\eps
+=
+O\!\left(\sqrt{\frac{\log\GammaH(2n)+\log(1/\delta)}{n}}\right).
+\]
+Substituting this back into the deterministic ERM reduction from Step 1 yields
+\[
+L_{\calD}(\hat h)
+\le
+\inf_{h\in\calH}L_{\calD}(h)
++
+O\!\left(\sqrt{\frac{\log\GammaH(2n)+\log(1/\delta)}{n}}\right).
+\]
+This is the desired i.i.d. growth-function ERM guarantee.
+\end{solutionbox}
+
+
+\textbf{Reference.} Provide detailed references for all results you used. and make sure everything can be checked against these references.
+\begin{solutionbox}
+
+The main references for Part A are:
+
+\begin{enumerate}
+    \item Wassily Hoeffding (1963), \emph{Probability Inequalities for Sums of Bounded Random Variables}.
+    \item McDiarmid (1989), \emph{Bounded Differences Method}.
+    \item Boucheron, Lugosi, Massart — \emph{Concentration Inequalities}.
+    \item Shalev-Shwartz \& Ben-David — \emph{Understanding Machine Learning}.
+    \item Mohri et al. — \emph{Foundations of Machine Learning}.
+
+    \item \textbf{Lean Formalizations (this work):}
+    \begin{itemize}
+        \item \texttt{A4\_ConcentrationProofs.lean} — formal structure of Hoeffding-style arguments
+        \item \texttt{A5\_ERMGuarantee.lean} — finite-class and union bound components
+    \end{itemize}
+
+\end{enumerate}
+
+\end{solutionbox}
+
+\section{Part B: The No-Free-Lunch Theorem and the Fundamental Theorem}
+
+The Week 3 lecture proved the growth-function ERM guarantee displayed in Part A and, via Sauer-Shelah, the VC corollary
+\[
+L_D(\hat{h}) \leq \inf_{h \in \mathcal{H}} L_D(h)
+    + O\!\left(
+        \sqrt{
+            \frac{d \log(2 e n / d) + \log(1/\delta)}{n}
+        }
+      \right),
+\]
+where $d=\operatorname{VCdim}(\mathcal{H})$. This establishes one direction of the Fundamental Theorem of PAC learning: if $\operatorname{VCdim}(\mathcal{H})<\infty$, then $\mathcal{H}$ is PAC learnable. The sample complexity matches the optimal bound up to a logarithmic factor.
+
+The converse direction, that $\operatorname{VCdim}(\mathcal{H})=\infty$ implies $\mathcal{H}$ is not PAC learnable, was stated in lecture but not proved. The standard route to this lower bound is the No-Free-Lunch theorem.
+
+\medskip
+
+\textbf{Theorem (No-Free-Lunch).}
+Let $A$ be any learning algorithm for binary classification with the $0$-$1$ loss over a domain $\mathcal X$, and let $n$ be any integer with $n<|\mathcal X|/2$. Then there exists a distribution $\mathcal D$ over $\mathcal X\times\{0,1\}$ such that:
+\begin{itemize}
+    \item[(i)] there exists a function $f^*: \mathcal X\to\{0,1\}$ satisfying $L_{\mathcal D}(f^*)=0$, and
+    \item[(ii)] with probability at least $1/7$ over $S\sim \mathcal D^n$, the learner’s output satisfies
+    \[
+    L_{\mathcal D}(A(S))\ge \frac{1}{8}.
+    \]
+\end{itemize}
+
+\medskip
+
+In this part, you will prove the No-Free-Lunch theorem, use it to establish the lower-bound direction of the Fundamental Theorem of PAC learning, construct an explicit failure example, and compare different formulations of the theorem.
+
+\medskip
+
+\begin{enumerate}
+\item \textbf{Proof of the No-Free-Lunch Theorem.}  
+Prove the theorem stated above. Before writing the proof, carefully identify which objects are universally quantified (e.g., the learner) and which are chosen adversarially (e.g., the distribution and labeling). The standard proof proceeds by averaging over all labelings of a $2n$-point subset of $\mathcal X$, followed by an application of the probabilistic method to extract a single bad labeling.
+
+\item \textbf{Application: Closing the Fundamental Theorem.}  
+State and prove the corollary that the No-Free-Lunch theorem implies the lower-bound direction of the Fundamental Theorem for PAC learning. Then make this application concrete: choose a hypothesis class with infinite VC dimension, prove that its VC dimension is infinite, and apply the corollary explicitly to show that the class is not PAC learnable.
+
+\item \textbf{Worked Construction.}  
+The proof of the No-Free-Lunch theorem guarantees the existence of a bad distribution but does not construct one explicitly. Provide a concrete example of a learning rule and a domain, and explicitly construct a distribution and target function for which the learner fails with constant probability. Verify this failure by direct calculation.
+
+\item \textbf{Comparison to the Week 1 No-Free-Lunch Theorem.}  
+In Week 1, a different version of the No-Free-Lunch theorem was proved: for any finite domain $\mathcal X$ and any deterministic learner $A$, there exist a function $f:\mathcal X\to\{0,1\}$ and an ordering $x_1,\dots,x_n$ of $\mathcal X$ such that $A$ makes $n$ mistakes on the sequence $(x_t,f(x_t))_{t=1}^n$. Compare this version with the Week 3 theorem. At minimum, identify teh learning setting each one lives in, the kind of adversary each one allows (in particular, whether the adversary is adaptive or oblivious), and the form of the conclusion (deterministic vs probabilistic, number of mistakes vs. population loss).Explain what each theorem is asserting and why both are described as “No-Free-Lunch” despite their differences.
+
+\end{enumerate}
+
+\begin{solutionbox}
+\paragraph{1. Proof of the No-Free-Lunch Theorem}
+
+Fix an arbitrary learner $A$. The learner is universal and fixed in advance. The adversary is then allowed to choose a bad subset of points, a bad labeling, and a corresponding realizable distribution.
+
+Choose distinct points
+\[
+x_1,\dots,x_{2n}\in \mathcal X,
+\]
+which is possible because $n<|\mathcal X|/2$. For every labeling
+\[
+b=(b_1,\dots,b_{2n})\in\{0,1\}^{2n},
+\]
+define a target function $f_b$ by
+\[
+f_b(x_i)=b_i.
+\]
+
+Let $\mathcal D_b$ be the uniform distribution on the $2n$ labeled examples
+\[
+(x_i,b_i), \qquad i=1,\dots,2n.
+\]
+Then $L_{\mathcal D_b}(f_b)=0$, so each such distribution is realizable.
+
+Now sample $S\sim \mathcal D_b^n$. Let $U(S)$ denote the number of points among $x_1,\dots,x_{2n}$ that do not appear in the sample. For any fixed point $x_i$,
+\[
+\Pbb(x_i \text{ is unseen}) = \left(1-\frac1{2n}\right)^n.
+\]
+Therefore
+\[
+\E[U(S)] = 2n\left(1-\frac1{2n}\right)^n \ge n.
+\]
+The last inequality is standard; in particular $\left(1-\frac1{2n}\right)^n\ge \frac12$ for all $n\ge 1$.
+
+Now average over the labelings $b$. Fix a realized sample $S$. On points seen in $S$, the learner may do well. But on points unseen in $S$, the learner has received no information about the corresponding labels, and under a uniformly random labeling the learner's expected error on each unseen point is $1/2$. Hence, conditioning on $S$,
+\[
+\E_b\bigl[L_{\mathcal D_b}(A(S))\mid S\bigr]
+\ge
+\frac{U(S)}{2n}\cdot \frac12
+=
+\frac{U(S)}{4n}.
+\]
+Taking expectation over $S$ as well yields
+\[
+\E_{b,S}\bigl[L_{\mathcal D_b}(A(S))\bigr]
+\ge
+\frac{\E[U(S)]}{4n}
+\ge
+\frac14.
+\]
+Let
+\[
+Z = L_{\mathcal D_b}(A(S)).
+\]
+Then $0\le Z\le 1$ and $\E[Z]\ge 1/4$. We claim this implies
+\[
+\Pbb(Z\ge 1/8)\ge \frac17.
+\]
+Indeed, if $\Pbb(Z\ge 1/8)<1/7$, then
+\[
+\E[Z]
+<
+\frac17\cdot 1 + \frac67\cdot \frac18
+=
+\frac14,
+\]
+which contradicts $\E[Z]\ge 1/4$.
+
+So, over the joint randomness of $b$ and $S$,
+\[
+\Pbb\bigl(L_{\mathcal D_b}(A(S))\ge 1/8\bigr)\ge \frac17.
+\]
+By the probabilistic method, there exists at least one labeling $b^*$ such that under $\mathcal D_{b^*}$,
+\[
+\Pbb_{S\sim \mathcal D_{b^*}^n}\bigl(L_{\mathcal D_{b^*}}(A(S))\ge 1/8\bigr)\ge \frac17.
+\]
+Set $f^*=f_{b^*}$. Then $L_{\mathcal D_{b^*}}(f^*)=0$, and the theorem follows.
+
+\medskip
+
+\paragraph{2. Application: Closing the Fundamental Theorem}
+
+\textbf{Corollary.} If $\operatorname{VCdim}(\mathcal H)=\infty$, then $\mathcal H$ is not PAC learnable.
+
+\medskip
+\textbf{Why this follows from NFL.} If $\operatorname{VCdim}(\mathcal H)=\infty$, then for every $n$ there exists a shattered set of size $2n$. Since every labeling of that set is realized by some hypothesis in $\mathcal H$, the No-Free-Lunch theorem applies inside $\mathcal H$ itself. Therefore no learner can guarantee arbitrarily small error with high probability uniformly over all realizable distributions from $\mathcal H$. Hence $\mathcal H$ is not PAC learnable.
+
+\medskip
+\textbf{Concrete hypothesis class.} Let
+\[
+\mathcal H = \{h_S : S\subseteq \R\},
+\qquad
+h_S(x)=\ind\{x\in S\}.
+\]
+This is the class of all binary-valued functions on $\R$.
+
+\medskip
+\textbf{Claim.} $\operatorname{VCdim}(\mathcal H)=\infty$.
+
+\begin{proof}
+Take any $m\in\N$ and any distinct points $x_1,\dots,x_m\in\R$. Let $y_1,\dots,y_m\in\{0,1\}$ be any labeling. Define
+\[
+S = \{x_i : y_i=1\}.
+\]
+Then for each $i$,
+\[
+h_S(x_i)=y_i.
+\]
+So the set $\{x_1,\dots,x_m\}$ is shattered by $\mathcal H$. Since this works for every $m$, the VC dimension is infinite.
+\end{proof}
+
+Now apply the corollary. Since $\operatorname{VCdim}(\mathcal H)=\infty$, the class $\mathcal H$ is not PAC learnable. Equivalently, for every learner and every sample size $n$, one can find a realizable distribution over labeled examples from this class on which the learner still has constant population error with constant probability.
+
+\medskip
+
+\paragraph{3. Worked Construction}
+Take the domain to contain distinct points $x_1,\dots,x_{2n}$. Consider the following deterministic learner:
+\begin{quote}
+Given a sample $S$, output a classifier that memorizes the observed labels and predicts $0$ on every unseen point.
+\end{quote}
+Formally, if $x_i$ appears in the sample with label $y_i$, then $A(S)(x_i)=y_i$; if $x_i$ never appears, then $A(S)(x_i)=0$.
+
+Now define the target function by
+\[
+f^*(x_i)=1 \qquad \text{for all } i=1,\dots,2n,
+\]
+and let $\mathcal D$ be the uniform distribution on the labeled set
+\[
+(x_i,1), \qquad i=1,\dots,2n.
+\]
+Then $L_{\mathcal D}(f^*)=0$, so the distribution is realizable.
+
+If a point $x_i$ is seen in the training sample, the learner predicts correctly there. If it is unseen, the learner predicts $0$, which is wrong because the true label is $1$. Therefore
+\[
+L_{\mathcal D}(A(S)) = \frac{U(S)}{2n},
+\]
+where $U(S)$ is the number of unseen points.
+
+As in Part B1,
+\[
+\E[U(S)] = 2n\left(1-\frac1{2n}\right)^n \ge n.
+\]
+Hence
+\[
+\E\bigl[L_{\mathcal D}(A(S))\bigr]
+=
+\frac{\E[U(S)]}{2n}
+\ge
+\frac12.
+\]
+So the learner has average population error at least $1/2$. In particular, the learner fails with constant probability. For example, if $Z=L_{\mathcal D}(A(S))$ and one had $\Pbb(Z\ge 1/8)<3/7$, then
+\[
+\E[Z]
+<
+\frac37\cdot 1 + \frac47\cdot \frac18
+=
+\frac12,
+\]
+contradicting $\E[Z]\ge 1/2$. Thus
+\[
+\Pbb\bigl(L_{\mathcal D}(A(S))\ge 1/8\bigr)\ge \frac37.
+\]
+This verifies constant-probability failure explicitly.
+\medskip
+
+\paragraph{4. Comparison to the Week 1 No-Free-Lunch Theorem}
+
+The two No-Free-Lunch theorems arise in fundamentally different learning settings, and their conclusions reflect these differences.
+
+\medskip
+
+\textbf{Week 1 NFL.}
+This theorem is stated in an online learning (sequential prediction) setting. Data points arrive one at a time, and the learner must make a prediction before seeing the label. The adversary is \emph{adaptive}: it observes the learner’s prediction on each round and then chooses the label to be the opposite. As a result, the learner makes a mistake on every single prediction, for a total of $n$ mistakes over $n$ rounds.
+
+\medskip
+
+\textbf{Week 3 NFL.}
+This theorem is stated in the i.i.d.\ statistical learning (PAC) setting. The adversary is \emph{oblivious}: it chooses a data distribution and target labeling in advance, and the learner receives an independent sample from this distribution. The conclusion is probabilistic: with constant probability over the sample, the learner’s output has constant population error (at least $1/8$), even though the problem is realizable.
+
+\medskip
+
+\textbf{Key differences:}
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+ & \textbf{Week 1 NFL} & \textbf{Week 3 NFL} \\
+\midrule
+Setting & Online & i.i.d. / PAC \\
+Adversary & Adaptive & Oblivious \\
+Conclusion & Deterministic & Probabilistic \\
+Performance measure & Mistake count & Population loss \\
+Guarantee & $n$ mistakes & Constant error w.p.\ $\ge 1/7$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+
+\textbf{Interpretation.}
+
+Both theorems express the same fundamental limitation: without structural assumptions on the target function or hypothesis class, no learning algorithm can succeed uniformly.
+
+In the Week 1 setting, the adversary exploits the lack of structure by reacting to the learner’s predictions in real time, forcing mistakes on every round. In the Week 3 setting, the adversary instead constructs a distribution that hides information about many inputs, so that the learner cannot generalize beyond the observed sample.
+
+Thus, while the mechanisms differ—adaptive adversary versus carefully chosen distribution—the conclusion is the same: there is no universally good learning algorithm without assumptions. This is why both results are called “No-Free-Lunch,” even though one is a worst-case deterministic statement and the other is a probabilistic lower bound on generalization error.
+
+\end{solutionbox}
+
+\section{Part C: AI Usage Report}
+
+ 
+Write a short report describing how you used AI in this assignment. Do not just list tools; explain what role AI played in your work and how you checked the result. Address:
+\begin{enumerate}[leftmargin=2em]
+\item Describe the parts of the assignment for which you used AI.
+\item Describe concrete AI suggestions you accepted and explain why.
+\item Describe concrete AI suggestions you rejected or substantially modified, and explain what was wrong, incomplete, or unhelpful about them.
+\item Describe how you verified the correctness of what you submitted.
+\end{enumerate}
+Also describe concrete updates to your AI workflow that resulted from this assignment. Explain the 5 most recent changes you made to your AI workflow and why.
+ 
+
+\begin{solutionbox}
+I used AI as a collaborator for structure, proof checking, and exposition, but not as a substitute for verification. In Part A, I used AI to help organize the mini-course into a coherent sequence: intuition first, then the MGF method, then theorem statements, then proofs, and finally the ERM application. In Part B, I used AI to check that the quantifiers in the No-Free-Lunch theorem were being interpreted correctly and to stress-test whether my worked construction was explicit enough.
+
+One suggestion I accepted was to organize the ERM proof around the standard chain
+\[
+\text{ERM reduction} \to \text{symmetrization} \to \text{growth-function counting} \to \text{concentration}.
+\]
+I accepted that because it matches the course logic and keeps the proof readable. Another accepted suggestion was to make the No-Free-Lunch proof explicitly separate the randomness over labelings from the randomness over samples, because that prevents hidden gaps in the averaging argument.
+
+I rejected or substantially modified several suggestions. One AI-generated proof sketch of Hoeffding's lemma skipped the convexity step and treated the MGF bound as obvious; I rejected that because it was too loose for a serious write-up. Another draft of the No-Free-Lunch proof blurred the roles of the learner, the adversary, and the random labeling average; I rewrote that proof because the quantifier order mattered. I also rejected an overconfident claim that the without-replacement case is “basically the same as independence” without explanation; I replaced it with the correct convex-order comparison statement.
+
+I verified correctness in several ways. First, I checked the main inequalities and constants against standard textbook forms. Second, I verified the deterministic ERM reduction separately from the probabilistic concentration step, so the final theorem was not resting on one large uninspected derivation. Third, I reread each proof to make sure every use of expectation, conditioning, or union bound was justified. Fourth, I made sure the conceptual comparison in Part B4 matched the actual differences between online and PAC learning.
+
+The five most recent updates to my AI workflow are as follows:
+\begin{enumerate}[leftmargin=2em]
+    \item I now ask for a proof skeleton before asking for polished prose, because it is easier to catch logical gaps in outline form.
+    \item I explicitly check the order of quantifiers before trusting any AI-generated lower-bound proof.
+    \item I require AI outputs on concentration inequalities to separate the Chernoff step, the MGF bound, and the optimization step.
+    \item I do a final pass comparing AI-assisted derivations against standard reference forms rather than trusting the first generated version.
+    \item I rewrite AI-generated exposition into my own style so that I can more easily detect unsupported jumps or hidden assumptions.
+\end{enumerate}
+
+If a later revision of this submission omits AI from a particular subsection, I would state that explicitly in the final version. In this draft, however, AI played a meaningful role in structuring the write-up and checking proof flow.
+\end{solutionbox}
+
+% =======================================================
+\appendix
+% =======================================================
+
+% =======================================================
+\section{Lean Artifact Map}
+\label{app:lean}
+% =======================================================
+
+The accompanying Lean files are designed to support the theoretical results in Parts~A and~B. 
+Rather than fully formalizing every probabilistic argument, the files focus on capturing the 
+core structure of the proofs and isolating the deterministic components that can be verified 
+directly.
+
+\medskip
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{File} & \textbf{Related Section} & \textbf{Role in Write-Up} \\
+\midrule
+\texttt{A4\_ConcentrationProofs.lean} 
+& Part A.4 
+& Formal structure of MGF-based concentration arguments \\
+
+\texttt{A5\_ERMGuarantee.lean} 
+& Part A.5 
+& Reduction from ERM to uniform convergence and union bound \\
+
+\texttt{B1\_NoFreeLunch.lean} 
+& Part B.1 
+& Encoding of labelings and adversarial construction \\
+
+\texttt{B2\_FundamentalTheoremLowerBound.lean} 
+& Part B.2 
+& VC-dimension construction and shattering argument \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+
+\textbf{How to run the Lean files.}
+\begin{enumerate}
+    \item Install Lean 4 with Mathlib using \texttt{elan} and \texttt{lake}.
+    \item From the repository root, run:
+    \[
+    \texttt{lake build}
+    \]
+    \item All files type-check, with comments marking where advanced probability results would be required for full formalization.
+\end{enumerate}
+
+% =======================================================
+\section{Remarks on Formalization Scope}
+\label{app:remarks}
+% =======================================================
+
+The probability and VC-dimension arguments in this assignment are significantly more complex 
+to formalize in Lean than to prove on paper. In particular, concentration inequalities and the 
+No-Free-Lunch theorem require advanced probability theory, including expectations over 
+product spaces and measure-theoretic reasoning.
+
+\medskip
+
+For this reason, the Lean files are intentionally scoped as \emph{formalization scaffolds}. 
+They include:
+\begin{itemize}
+    \item precise theorem statements,
+    \item deterministic reductions (e.g., VC-dimension arguments),
+    \item structural encodings of hypothesis classes and labelings,
+    \item and clear markers where additional probabilistic lemmas would be required.
+\end{itemize}
+
+\medskip
+
+This approach ensures that the logical structure of each proof is captured formally, while 
+remaining consistent with the scope and tools available for this assignment.
+
+\end{document}
