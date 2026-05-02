@@ -1,0 +1,2145 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{tabularx}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black, citecolor=blue!60!black}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{DSC 190/291 Assignment 3}
+\rhead{Dhruv Patel}
+\cfoot{\thepage}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+
+\newtheorem{claim}{Claim}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\calD}{\mathcal{D}}
+\newcommand{\calH}{\mathcal{H}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+\newcommand{\GammaH}{\Gamma_{\mathcal{H}}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\eps}{\varepsilon}
+
+\tcbset{
+  colback=white,
+  colframe=black!75,
+  boxrule=0.8pt,
+  arc=2pt,
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{solutionbox}{
+    colback=white,
+    colframe=black,
+    boxrule=0.5pt,
+    breakable
+}
+
+\title{\textbf{DSC 190/291 Assignment 4}\\Detailed Write-Up}
+\author{Dhruv Patel}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================
+\section{Part A: Sparse Linear Predictors}
+% =====================================================
+This problem studies structural risk minimization in a setting where the complexity parameter 
+is sparsity. The goal is to connect non-uniform learning bounds with the computational cost of 
+searching over sparse predictors.
+
+Let $\mathcal{X} = \mathbb{R}^d$ and $\mathcal{Y} = \{-1,+1\}$. Use the convention 
+$\operatorname{sign}(z) = +1$ for $z \ge 0$ and $\operatorname{sign}(z) = -1$ for $z < 0$. 
+For $1 \le k \le d$, define the class of $k$-sparse homogeneous linear classifiers
+
+
+\[
+\mathcal{H}_k = \left\{ x \mapsto \operatorname{sign}(\langle w, x \rangle) : 
+w \in \mathbb{R}^d,\ \|w\|_0 \le k \right\}.
+\]
+
+
+Let $\mathcal{H} = \bigcup_{k=1}^d \mathcal{H}_k$. Let $\mathcal{D}$ be any distribution over 
+$\mathcal{X} \times \mathcal{Y}$, and let $S = ((x_1,y_1),\dots,(x_n,y_n)) \sim \mathcal{D}^n$. 
+When a weight vector $w$ is used as the argument of $L_S$ or $L_{\mathcal{D}}$, it denotes the classifier 
+$x \mapsto \operatorname{sign}(\langle w, x \rangle)$.
+\subsection{VC Dimension Through Supports}
+Prove an upper bound of teh form
+\[
+\VCdim(\calH_k) = O\!\left(k \log\left(\frac{ed}{k}\right)\right).
+\]
+
+Hint: write $\calH_K$ as a union over the possible supports of $w$, then combine the growthfunction bounds for those subclasses.
+
+\begin{solutionbox}
+
+We begin by decomposing the class $\calH_k$ according to the support of the weight vector.
+
+\medskip
+
+\textbf{Step 1: Decomposition into support-restricted classes.}
+
+For each subset $I \subseteq [d]$ with $|I| = k$, define
+\[
+\calH_I
+=
+\left\{
+x \mapsto \sign(\langle w, x \rangle)
+:
+\operatorname{supp}(w) \subseteq I
+\right\}.
+\]
+
+Then every $k$-sparse vector has its support contained in some such $I$, so
+\[
+\calH_k
+=
+\bigcup_{I \subseteq [d],\ |I|=k} \calH_I.
+\]
+
+\medskip
+
+\textbf{Step 2: VC dimension of each subclass.}
+
+Fix a support $I$ with $|I| = k$. For any $h \in \calH_I$, the classifier depends only on the coordinates of $x$ indexed by $I$. Thus $\calH_I$ is equivalent to the class of homogeneous linear separators in $\R^k$.
+
+It is a standard result that the VC dimension of homogeneous halfspaces in $\R^k$ is at most $k$. Therefore,
+\[
+\VCdim(\calH_I) \le k.
+\]
+
+\medskip
+
+\textbf{Step 3: Growth function bound for each subclass.}
+
+By Sauer’s lemma, for any hypothesis class with VC dimension $k$, the growth function satisfies
+\[
+\Pi_{\calH_I}(n)
+\le
+\sum_{i=0}^k \binom{n}{i}
+\le
+\left(\frac{en}{k}\right)^k.
+\]
+
+\medskip
+
+\textbf{Step 4: Counting the number of supports.}
+
+The number of subsets $I \subseteq [d]$ of size $k$ is
+\[
+\binom{d}{k}.
+\]
+
+Using the standard bound,
+\[
+\binom{d}{k}
+\le
+\left(\frac{ed}{k}\right)^k.
+\]
+
+\medskip
+
+\textbf{Step 5: Growth function of $\calH_k$.}
+
+Since $\calH_k$ is a union of the classes $\calH_I$, we can bound its growth function by summing over all supports:
+\[
+\Pi_{\calH_k}(n)
+\le
+\sum_{I:|I|=k} \Pi_{\calH_I}(n)
+\le
+\binom{d}{k}
+\left(\frac{en}{k}\right)^k.
+\]
+
+Substituting the bound on $\binom{d}{k}$,
+\[
+\Pi_{\calH_k}(n)
+\le
+\left(\frac{ed}{k}\right)^k
+\left(\frac{en}{k}\right)^k.
+\]
+
+\medskip
+
+\textbf{Step 6: Converting growth function to VC dimension.}
+
+If $\calH_k$ shatters $n$ points, then by definition
+\[
+\Pi_{\calH_k}(n) = 2^n.
+\]
+
+Therefore,
+\[
+2^n
+\le
+\left(\frac{ed}{k}\right)^k
+\left(\frac{en}{k}\right)^k.
+\]
+
+Taking logarithms,
+\[
+n \log 2
+\le
+k \log\left(\frac{ed}{k}\right)
++
+k \log\left(\frac{en}{k}\right).
+\]
+
+We can rewrite this as
+\[
+n
+\le
+C \cdot k \left(
+\log\left(\frac{ed}{k}\right)
++
+\log\left(\frac{en}{k}\right)
+\right)
+\]
+for a universal constant $C$.
+
+Since $\log(en/k) \le \log n + O(1)$, this implies that $n$ cannot grow faster than a constant multiple of $k \log(ed/k)$.
+
+\medskip
+
+\textbf{Conclusion.}
+
+Thus we conclude that
+\[
+\boxed{
+\VCdim(\calH_k)
+=
+O\!\left(k \log\left(\frac{ed}{k}\right)\right).
+}
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The term $k$ reflects the complexity of learning a linear separator once the support is fixed. The additional factor $\log(ed/k)$ comes from the need to choose which $k$ coordinates (out of $d$) are active.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Penalty-based SRM.}
+Choose a prior $p_k > 0$ over sparsity levels $k = 1,\dots,d$ with 
+$\sum_{k=1}^d p_k \le 1$; for example, you may take $p_k \propto \frac{1}{k^2}$.
+Define an SRM rule of the form
+
+
+\[
+\hat{h} \in 
+\arg\min_{1 \le k \le d,\; h \in \mathcal{H}_k}
+\left\{
+L_S(h) + \operatorname{pen}(k,n,\delta)
+\right\}.
+\]
+
+
+
+Derive a high-probability oracle inequality of the form
+
+
+\[
+L_{\mathcal{D}}(\hat{h})
+\;\le\;
+\inf_{1 \le k \le d,\; h \in \mathcal{H}_k}
+\left\{
+L_{\mathcal{D}}(h)
+\;+\;
+C \sqrt{
+\frac{
+k \log\!\left(\frac{e d}{k}\right)
+\;+\;
+\log\!\left(\frac{1}{p_k}\right)
+\;+\;
+\log\!\left(\frac{1}{\delta}\right)
+}{
+n}
+}
+\right\}
+\]
+
+
+for a universal constant $C$.
+
+You may use the class-level SRM theorem from lecture, but you must
+instantiate every term in the bound and explain what statistical cost is
+paid for choosing the support and what cost is paid for choosing the
+sparsity level.
+
+
+\begin{solutionbox}
+
+We want to choose among the nested sparsity classes
+\[
+\calH_1,\calH_2,\dots,\calH_d.
+\]
+The difficulty is that the learner is not told in advance which sparsity level is best, so the penalty must account for both the complexity of each class and the cost of selecting among different values of $k$.
+
+\medskip
+
+First choose a prior over sparsity levels. A standard choice is
+\[
+p_k=\frac{6}{\pi^2 k^2}, \qquad k=1,\dots,d.
+\]
+This is valid because
+\[
+\sum_{k=1}^d p_k
+\le
+\sum_{k=1}^{\infty}\frac{6}{\pi^2 k^2}
+=
+1.
+\]
+
+From the previous part, we have
+\[
+\VCdim(\calH_k)
+\le
+C_0 k\log\left(\frac{ed}{k}\right)
+\]
+for some universal constant $C_0$.
+
+For a fixed sparsity level $k$, the standard VC uniform convergence bound gives that with probability at least $1-\delta_k$, simultaneously for all $h\in\calH_k$,
+\[
+|L_{\calD}(h)-L_S(h)|
+\le
+C_1
+\sqrt{
+\frac{
+\VCdim(\calH_k)+\log(1/\delta_k)
+}{n}
+}.
+\]
+
+Now allocate confidence according to the prior:
+\[
+\delta_k=p_k\delta.
+\]
+Then
+\[
+\sum_{k=1}^d \delta_k
+=
+\delta\sum_{k=1}^d p_k
+\le
+\delta.
+\]
+Therefore, by a union bound, with probability at least $1-\delta$, the following bound holds simultaneously for every $k=1,\dots,d$ and every $h\in\calH_k$:
+\[
+|L_{\calD}(h)-L_S(h)|
+\le
+C_1
+\sqrt{
+\frac{
+\VCdim(\calH_k)+\log(1/(p_k\delta))
+}{n}
+}.
+\]
+
+Since
+\[
+\log\left(\frac{1}{p_k\delta}\right)
+=
+\log\left(\frac{1}{p_k}\right)
++
+\log\left(\frac{1}{\delta}\right),
+\]
+and since
+\[
+\VCdim(\calH_k)
+\le
+C_0 k\log\left(\frac{ed}{k}\right),
+\]
+we get
+\[
+|L_{\calD}(h)-L_S(h)|
+\le
+C_2
+\sqrt{
+\frac{
+k\log(ed/k)+\log(1/p_k)+\log(1/\delta)
+}{n}
+}
+\]
+for a universal constant $C_2$.
+
+Define the penalty by
+\[
+\operatorname{pen}(k,n,\delta)
+=
+C_2
+\sqrt{
+\frac{
+k\log(ed/k)+\log(1/p_k)+\log(1/\delta)
+}{n}
+}.
+\]
+
+The SRM rule is
+\[
+\hat h\in
+\arg\min_{1\le k\le d,\ h\in\calH_k}
+\left\{
+L_S(h)+\operatorname{pen}(k,n,\delta)
+\right\}.
+\]
+
+Let $\hat h\in\calH_{\hat k}$ be the output of this rule. On the high-probability event above,
+\[
+L_{\calD}(\hat h)
+\le
+L_S(\hat h)+\operatorname{pen}(\hat k,n,\delta).
+\]
+
+By the definition of $\hat h$ as the minimizer of the penalized empirical risk, for every $k$ and every $h\in\calH_k$,
+\[
+L_S(\hat h)+\operatorname{pen}(\hat k,n,\delta)
+\le
+L_S(h)+\operatorname{pen}(k,n,\delta).
+\]
+
+Again using the uniform convergence bound,
+\[
+L_S(h)
+\le
+L_{\calD}(h)+\operatorname{pen}(k,n,\delta).
+\]
+
+Combining these three inequalities gives
+\[
+L_{\calD}(\hat h)
+\le
+L_{\calD}(h)+2\operatorname{pen}(k,n,\delta).
+\]
+
+Since this holds for every sparsity level $k$ and every $h\in\calH_k$, we may take the infimum:
+\[
+L_{\calD}(\hat h)
+\le
+\inf_{1\le k\le d,\ h\in\calH_k}
+\left\{
+L_{\calD}(h)+2\operatorname{pen}(k,n,\delta)
+\right\}.
+\]
+
+Absorbing the factor of $2$ into the universal constant $C$, we obtain
+\[
+\boxed{
+L_{\mathcal{D}}(\hat{h})
+\le
+\inf_{1 \le k \le d,\; h \in \mathcal{H}_k}
+\left\{
+L_{\mathcal{D}}(h)
++
+C \sqrt{
+\frac{
+k \log\!\left(\frac{ed}{k}\right)
++
+\log\!\left(\frac{1}{p_k}\right)
++
+\log\!\left(\frac{1}{\delta}\right)
+}{
+n}
+}
+\right\}.
+}
+\]
+
+The term
+\[
+k\log\left(\frac{ed}{k}\right)
+\]
+is the statistical cost of learning a $k$-sparse classifier. It includes the cost of choosing the support among the possible coordinate subsets and fitting a linear separator once that support is fixed.
+
+The term
+\[
+\log\left(\frac{1}{p_k}\right)
+\]
+is the additional cost of choosing the sparsity level $k$ itself. If we choose
+\[
+p_k=\frac{6}{\pi^2k^2},
+\]
+then
+\[
+\log\left(\frac{1}{p_k}\right)
+=
+\log\left(\frac{\pi^2k^2}{6}\right)
+=
+O(\log k).
+\]
+So the sparsity-level selection cost is only logarithmic in $k$, while the main statistical cost usually comes from the support-selection term
+\[
+k\log(ed/k).
+\]
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Comparison with dense halfspaces.}
+Suppose there exists $w^\ast \in \mathbb{R}^d$ with $\|w^\ast\|_0 \le s$ and 
+$L_{\mathcal{D}}(w^\ast) \le \eta$. Use the SRM bound above to state a sample size 
+sufficient to guarantee
+
+
+\[
+L_{\mathcal{D}}(\hat{h}) \le \eta + \varepsilon
+\]
+
+
+with probability at least $1 - \delta$.
+
+Then compare this with the sample size obtained by learning over all homogeneous 
+halfspaces in $\mathbb{R}^d$. In what regime is the sparse bound smaller?
+
+\begin{solutionbox}
+
+Assume there exists a sparse predictor $w^\ast\in\mathbb R^d$ such that
+\[
+\|w^\ast\|_0\le s
+\qquad\text{and}\qquad
+L_{\calD}(w^\ast)\le \eta.
+\]
+
+From the SRM oracle inequality in the previous part, with probability at least $1-\delta$,
+\[
+L_{\calD}(\hat h)
+\le
+\inf_{1\le k\le d,\ h\in\calH_k}
+\left\{
+L_{\calD}(h)
++
+C\sqrt{
+\frac{
+k\log(ed/k)+\log(1/p_k)+\log(1/\delta)
+}{n}
+}
+\right\}.
+\]
+
+Since $w^\ast$ is $s$-sparse, it belongs to $\calH_s$. Therefore we may plug in
+\[
+k=s
+\qquad\text{and}\qquad
+h=w^\ast.
+\]
+This gives
+\[
+L_{\calD}(\hat h)
+\le
+L_{\calD}(w^\ast)
++
+C\sqrt{
+\frac{
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+}{n}
+}.
+\]
+
+Using $L_{\calD}(w^\ast)\le \eta$,
+\[
+L_{\calD}(\hat h)
+\le
+\eta
++
+C\sqrt{
+\frac{
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+}{n}
+}.
+\]
+
+To guarantee
+\[
+L_{\calD}(\hat h)\le \eta+\varepsilon,
+\]
+it is enough to require
+\[
+C\sqrt{
+\frac{
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+}{n}
+}
+\le
+\varepsilon.
+\]
+
+Squaring both sides,
+\[
+C^2
+\frac{
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+}{n}
+\le
+\varepsilon^2.
+\]
+
+Equivalently, it suffices that
+\[
+n
+\ge
+\frac{C^2}{\varepsilon^2}
+\left(
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+\right).
+\]
+
+Thus a sufficient sample size is
+\[
+\boxed{
+n
+=
+O\!\left(
+\frac{
+s\log(ed/s)+\log(1/p_s)+\log(1/\delta)
+}{\varepsilon^2}
+\right).
+}
+\]
+
+If we use the prior
+\[
+p_s=\frac{6}{\pi^2s^2},
+\]
+then
+\[
+\log\left(\frac{1}{p_s}\right)
+=
+\log\left(\frac{\pi^2s^2}{6}\right)
+=
+O(\log s).
+\]
+So the sample size can be written as
+\[
+\boxed{
+n
+=
+O\!\left(
+\frac{
+s\log(ed/s)+\log s+\log(1/\delta)
+}{\varepsilon^2}
+\right).
+}
+\]
+Usually the main sparsity-dependent term is
+\[
+s\log(ed/s).
+\]
+
+Now compare this with learning over all homogeneous halfspaces in $\mathbb R^d$. The class of all homogeneous halfspaces in $\mathbb R^d$ has VC dimension $d$. Therefore a standard VC bound gives sample size
+\[
+\boxed{
+n_{\mathrm{dense}}
+=
+O\!\left(
+\frac{
+d+\log(1/\delta)
+}{\varepsilon^2}
+\right).
+}
+\]
+
+The sparse bound is smaller when
+\[
+s\log(ed/s)+\log(1/p_s)
+\ll
+d.
+\]
+
+For the prior $p_s\propto 1/s^2$, this condition becomes approximately
+\[
+\boxed{
+s\log(ed/s)\ll d.
+}
+\]
+
+This is the high-dimensional sparse regime. In words, sparse learning gives a better sample complexity when the true classifier uses only a small number $s$ of the $d$ available coordinates. For example, if $s$ is constant while $d$ grows, then the sparse sample complexity grows only like
+\[
+O(\log d),
+\]
+whereas the dense halfspace bound grows like
+\[
+O(d).
+\]
+
+On the other hand, if $s$ is comparable to $d$, then
+\[
+s\log(ed/s)
+\approx d,
+\]
+so the sparse and dense bounds are of the same order. In that regime, sparsity no longer gives a meaningful statistical advantage.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Validation as model selection.}
+Consider the following validation rule. Assume $n$ is even, and split the sample into two 
+equal parts $S_1$ and $S_2$. For each $k = 1,\dots,d$, let
+
+
+\[
+w_k \in \arg\min_{\|w\|_0 \le k} L_{S_1}(w).
+\]
+
+
+Then choose the output $\hat{w}_{\hat{k}}$ with
+
+
+\[
+\hat{k} \in \arg\min_{1 \le k \le d} L_{S_2}(w_k).
+\]
+
+
+
+Prove a validation-style oracle bound of the form
+
+
+\[
+L_{\mathcal{D}}(\hat{w}_{\hat{k}})
+\;\le\;
+\inf_{1 \le k \le d,\; w:\,\|w\|_0 \le k}
+\left\{
+L_{\mathcal{D}}(w)
+\;+\;
+C \sqrt{
+\frac{
+k \log\!\left(\frac{e d}{k}\right)
+\;+\;
+\log\!\left(\frac{d}{\delta}\right)
+}{
+n}
+}
+\right\}
+\]
+
+
+for a universal constant $C$.
+
+\noindent
+\textit{Hint:} After conditioning on $S_1$, the validation step is a finite-class selection 
+problem over the candidates $w_1,\dots,w_d$.
+
+Then compare this validation rule to the penalty-based SRM rule above: what samples 
+are used to fit predictors, what samples are used to choose the complexity level, and what 
+statistical price is paid for that separation?
+
+
+\begin{solutionbox}
+
+Because $n$ is even, write
+\[
+|S_1|=|S_2|=\frac n2.
+\]
+The first half $S_1$ is used to fit one candidate predictor for each sparsity level $k$, and the second half $S_2$ is used only to choose among those fitted candidates.
+
+\medskip
+
+For each $k=1,\dots,d$, define
+\[
+w_k\in \arg\min_{\|w\|_0\le k}L_{S_1}(w).
+\]
+Thus $w_k$ is the empirical risk minimizer over the class $\calH_k$ using only $S_1$.
+
+By the VC bound from Part A.1,
+\[
+\VCdim(\calH_k)
+\le
+C_0k\log\left(\frac{ed}{k}\right).
+\]
+Applying a uniform convergence bound to $\calH_k$ on the sample $S_1$, and union bounding over all $k=1,\dots,d$, gives that with probability at least $1-\delta/2$, simultaneously for all $k$,
+\[
+L_{\calD}(w_k)
+\le
+\inf_{\|w\|_0\le k}L_{\calD}(w)
++
+C_1
+\sqrt{
+\frac{
+k\log(ed/k)+\log(2d/\delta)
+}{
+n}
+}.
+\]
+Here the denominator is written as $n$ instead of $n/2$ because the factor of $2$ is absorbed into the universal constant.
+
+\medskip
+
+Now we analyze the validation step. Condition on $S_1$. Once $S_1$ is fixed, the predictors
+\[
+w_1,w_2,\dots,w_d
+\]
+are fixed functions. Therefore, choosing among them using $S_2$ is a finite-class model selection problem over only $d$ candidates.
+
+For any fixed candidate $w_k$, Hoeffding's inequality on the validation sample gives
+\[
+\left|L_{S_2}(w_k)-L_{\calD}(w_k)\right|
+\le
+C_2\sqrt{\frac{\log(2d/\delta)}{n}}
+\]
+simultaneously for all $k=1,\dots,d$ with probability at least $1-\delta/2$.
+
+Thus, on this validation event, for every $k$,
+\[
+L_{\calD}(w_k)
+\le
+L_{S_2}(w_k)
++
+C_2\sqrt{\frac{\log(2d/\delta)}{n}}.
+\]
+
+Since $\hat k$ minimizes validation error,
+\[
+L_{S_2}(w_{\hat k})
+\le
+L_{S_2}(w_k)
+\]
+for every $k$.
+
+Therefore, for every fixed $k$,
+\begin{align*}
+L_{\calD}(w_{\hat k})
+&\le
+L_{S_2}(w_{\hat k})
++
+C_2\sqrt{\frac{\log(2d/\delta)}{n}}\\
+&\le
+L_{S_2}(w_k)
++
+C_2\sqrt{\frac{\log(2d/\delta)}{n}}\\
+&\le
+L_{\calD}(w_k)
++
+2C_2\sqrt{\frac{\log(2d/\delta)}{n}}.
+\end{align*}
+
+Now substitute the training-half guarantee for $L_{\calD}(w_k)$. With probability at least $1-\delta$, for every $k$,
+\[
+L_{\calD}(w_{\hat k})
+\le
+\inf_{\|w\|_0\le k}L_{\calD}(w)
++
+C_1
+\sqrt{
+\frac{
+k\log(ed/k)+\log(2d/\delta)
+}{
+n}
+}
++
+2C_2
+\sqrt{
+\frac{\log(2d/\delta)}{n}
+}.
+\]
+
+Since the validation term is already contained in the larger expression, we can absorb constants and write
+\[
+L_{\calD}(w_{\hat k})
+\le
+\inf_{\|w\|_0\le k}L_{\calD}(w)
++
+C
+\sqrt{
+\frac{
+k\log(ed/k)+\log(d/\delta)
+}{
+n}
+}
+\]
+for a universal constant $C$.
+
+Taking the infimum over all sparsity levels gives
+\[
+\boxed{
+L_{\mathcal{D}}(\hat{w}_{\hat{k}})
+\le
+\inf_{1 \le k \le d,\; w:\,\|w\|_0 \le k}
+\left\{
+L_{\mathcal{D}}(w)
++
+C \sqrt{
+\frac{
+k \log\!\left(\frac{ed}{k}\right)
++
+\log\!\left(\frac{d}{\delta}\right)
+}{
+n}
+}
+\right\}.
+}
+\]
+
+\medskip
+
+Now compare this validation rule with the penalty-based SRM rule.
+
+In the penalty-based SRM rule, the same sample $S$ is used both to fit predictors and to select the complexity level. The selection over $k$ is handled by adding the penalty term
+\[
+\log\left(\frac{1}{p_k}\right).
+\]
+Thus SRM does not throw away data for fitting, but it must pay a complexity penalty for searching over sparsity levels.
+
+In the validation rule, the roles are separated:
+\[
+S_1 \text{ is used to fit } w_1,\dots,w_d,
+\]
+while
+\[
+S_2 \text{ is used to choose among } w_1,\dots,w_d.
+\]
+After conditioning on $S_1$, the validation step only chooses among $d$ fixed predictors. Therefore the model-selection cost is the finite-class term
+\[
+\sqrt{\frac{\log(d/\delta)}{n}}.
+\]
+
+The statistical price of this separation is that each fitted predictor $w_k$ is trained using only half the sample. This changes constants in the bound, because the effective training sample size is $n/2$ rather than $n$. The benefit is that the model-selection step becomes simpler and only pays a finite-class validation cost.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Computation}
+Now restrict attention to the realizable case. Suppose the sample is consistent with 
+some $k$-sparse homogeneous halfspace. Describe the brute-force algorithm that enumerates 
+supports $I \subseteq [d]$ with $|I| = k$ and solves a halfspace feasibility problem on each 
+support. Estimate its runtime as a function of $d$, $k$, and $n$. In which regimes of $k$ is 
+this polynomial in $d$? Explain how this illustrates the Week~4 distinction between sample 
+complexity and computational complexity.
+
+
+\begin{solutionbox}
+
+We are now in the realizable case. This means that there exists some unknown vector
+\[
+w^\ast \in \mathbb R^d
+\]
+such that
+\[
+\|w^\ast\|_0 \le k
+\]
+and the classifier
+\[
+x \mapsto \sign(\langle w^\ast,x\rangle)
+\]
+correctly labels every training example.
+
+The brute-force algorithm searches over all possible supports of size $k$.
+
+\medskip
+
+\textit{Algorithm.}
+\begin{enumerate}[leftmargin=2em]
+    \item Enumerate every subset
+    \[
+    I \subseteq [d]
+    \qquad\text{with}\qquad
+    |I|=k.
+    \]
+
+    \item For each support $I$, restrict every data point $x_i\in\mathbb R^d$ to the coordinates in $I$:
+    \[
+    x_{i,I}\in\mathbb R^k.
+    \]
+
+    \item Solve the homogeneous halfspace feasibility problem on those $k$ coordinates. That is, check whether there exists a vector
+    \[
+    u\in\mathbb R^k
+    \]
+    such that
+    \[
+    y_i\langle u,x_{i,I}\rangle \ge 0
+    \qquad
+    \text{for every } i=1,\dots,n.
+    \]
+
+    \item If such a vector $u$ exists, construct a vector $w\in\mathbb R^d$ by placing the coordinates of $u$ on the support $I$ and putting zeros outside $I$. Then output $w$.
+\end{enumerate}
+
+Since the sample is assumed to be consistent with some $k$-sparse homogeneous halfspace, at least one support will eventually pass the feasibility test.
+
+\medskip
+
+Now estimate the runtime.
+
+The number of supports of size $k$ is
+\[
+\binom{d}{k}.
+\]
+Using the standard binomial bound,
+\[
+\binom{d}{k}
+\le
+\left(\frac{ed}{k}\right)^k.
+\]
+
+For each fixed support, the feasibility problem has:
+\[
+k \text{ variables}
+\]
+and
+\[
+n \text{ linear constraints}.
+\]
+A linear feasibility problem can be solved in time polynomial in the number of variables and constraints, so each feasibility test costs
+\[
+\operatorname{poly}(n,k).
+\]
+
+Therefore the total runtime is
+\[
+\binom{d}{k}\operatorname{poly}(n,k).
+\]
+
+Using the binomial bound,
+\[
+\boxed{
+\text{Runtime}
+\le
+\left(\frac{ed}{k}\right)^k\operatorname{poly}(n,k).
+}
+\]
+
+Now consider when this runtime is polynomial in $d$.
+
+If $k$ is a fixed constant, then
+\[
+\binom{d}{k}=O(d^k),
+\]
+which is polynomial in $d$. Therefore, for constant sparsity,
+\[
+k=O(1),
+\]
+the brute-force algorithm is polynomial in $d$.
+
+If $k=O(\log d)$, then
+\[
+\left(\frac{ed}{k}\right)^k
+\]
+is usually quasi-polynomial rather than polynomial in $d$.
+
+If $k$ grows like a power of $d$, for example
+\[
+k=d^\alpha
+\qquad\text{for some }0<\alpha\le 1,
+\]
+then the number of supports becomes super-polynomial in $d$. In particular, if $k$ is a constant fraction of $d$, then
+\[
+\binom{d}{k}
+\]
+is exponential in $d$.
+
+Thus the brute-force algorithm is polynomial in $d$ only when $k$ is treated as a constant.
+
+\medskip
+
+This illustrates the Week~4 distinction between sample complexity and computational complexity. From the earlier statistical bounds, sparse learning can require only about
+\[
+O\!\left(k\log\left(\frac{ed}{k}\right)\right)
+\]
+samples, which can be much smaller than $d$ when $k\ll d$. So statistically, sparsity can make the problem much easier.
+
+However, computationally, finding the correct sparse support by brute force requires searching through
+\[
+\binom{d}{k}
+\]
+possible supports. This search can be infeasible even when the number of samples needed for learning is small.
+
+Therefore, sparse linear classification may be statistically efficient but computationally expensive. The sample complexity tells us how much data is needed, while the computational complexity tells us how hard it is to actually find the predictor.
+
+\end{solutionbox}
+
+% =====================================================
+\section{Part B: PAC-Bayes}
+% =====================================================
+PAC-Bayes bounds use $\mathrm{KL}(Q \,\|\, P)$ as the complexity term. This problem compares 
+that term with VC dimension for thresholds on a finite ordered domain.
+
+Throughout, let
+
+
+\[
+\mathcal{X}_N = \{1,2,\dots,N\}, \qquad \mathcal{Y} = \{0,1\},
+\]
+
+
+and define the threshold class
+
+
+\[
+\mathcal{H}_N = \{ h_t : t \in \{1,\dots, N+1\} \},
+\qquad
+h_t(x) = \mathbf{1}[x \ge t].
+\]
+
+
+Thus $h_1$ labels every point by $1$, and $h_{N+1}$ labels every point by $0$.
+
+Use the PAC-Bayes bound from lecture: For any distribution $\mathcal{D}$ over 
+$\mathcal{X}_N \times \mathcal{Y}$ and any prior $P$, with probability at least $1 - \delta$ 
+over $S = ((x_1,y_1),\dots,(x_n,y_n)) \sim \mathcal{D}^n$, simultaneously for all posteriors $Q$,
+
+
+\[
+L_{\mathcal{D}}(Q)
+\;\le\;
+L_S(Q)
+\;+\;
+\sqrt{
+\frac{
+\mathrm{KL}(Q \,\|\, P)
+\;+\;
+\log\!\left(\frac{2n}{\delta}\right)
+}{
+2(n-1)
+}
+}.
+\]
+
+
+
+Here
+
+
+\[
+L_{\mathcal{D}}(Q) = \mathbb{E}_{h \sim Q}[L_{\mathcal{D}}(h)],
+\qquad
+L_S(Q) = \mathbb{E}_{h \sim Q}[L_S(h)].
+\]
+We work in the realizable setting.
+\subsection{VC Dimension and point-posterior PAC-Bayes}
+Prove that $\operatorname{VCdim}(\mathcal{H}_N) = 1$. Let $P$ be the uniform prior over 
+$\mathcal{H}_N$, let $A(S)$ be any deterministic ERM rule that returns a consistent 
+threshold $\hat{h}_t$, and define $Q_S = \delta_{\hat{h}_t}$. Compute 
+$\mathrm{KL}(Q_S \,\|\, P)$, plug it into the PAC-Bayes theorem, and write the resulting 
+bound on $L_{\mathcal{D}}(Q_S)$. Finally, explain in two or three sentences why this 
+PAC-Bayes certificate scales with $\log(N+1)$ even though a VC-style realizable guarantee 
+for thresholds should not scale with $\log N$.
+
+
+\begin{solutionbox}
+
+Recall that
+\[
+\mathcal X_N=\{1,2,\dots,N\}
+\]
+and
+\[
+\mathcal H_N=\{h_t:t\in\{1,\dots,N+1\}\},
+\qquad
+h_t(x)=\mathbf 1[x\ge t].
+\]
+
+First we prove that
+\[
+\VCdim(\mathcal H_N)=1.
+\]
+
+A single point $x\in\mathcal X_N$ can be shattered. To label $x$ as $1$, choose any threshold
+\[
+t\le x.
+\]
+Then
+\[
+h_t(x)=1.
+\]
+To label $x$ as $0$, choose
+\[
+t=x+1.
+\]
+Then
+\[
+h_{x+1}(x)=\mathbf 1[x\ge x+1]=0.
+\]
+Therefore every labeling of one point can be realized, so
+\[
+\VCdim(\mathcal H_N)\ge 1.
+\]
+
+Now consider any two points
+\[
+x_1<x_2.
+\]
+Every threshold classifier in $\mathcal H_N$ is monotone: once it labels a point as $1$, it labels all larger points as $1$. Therefore, if
+\[
+h_t(x_1)=1,
+\]
+then
+\[
+x_1\ge t.
+\]
+Since $x_2>x_1$, we also have
+\[
+x_2\ge t,
+\]
+so
+\[
+h_t(x_2)=1.
+\]
+Thus the labeling
+\[
+h(x_1)=1,
+\qquad
+h(x_2)=0
+\]
+cannot be realized by any threshold in $\mathcal H_N$.
+
+So no two-point set can be shattered. Hence
+\[
+\boxed{
+\VCdim(\mathcal H_N)=1.
+}
+\]
+
+Now let $P$ be the uniform prior over $\mathcal H_N$. Since there are $N+1$ thresholds,
+\[
+P(h_t)=\frac{1}{N+1}
+\]
+for every $t\in\{1,\dots,N+1\}$.
+
+Let $A(S)$ be a deterministic ERM rule that returns a consistent threshold. Write the returned threshold as
+\[
+\hat h_t.
+\]
+Define the point posterior
+\[
+Q_S=\delta_{\hat h_t}.
+\]
+This posterior puts all its mass on the single classifier $\hat h_t$.
+
+The KL divergence is
+\[
+\KL(Q_S\|P)
+=
+\sum_{h\in\mathcal H_N}
+Q_S(h)\log\left(\frac{Q_S(h)}{P(h)}\right).
+\]
+Since $Q_S$ puts probability $1$ on $\hat h_t$ and $0$ on all other hypotheses,
+\[
+\KL(Q_S\|P)
+=
+\log\left(\frac{1}{P(\hat h_t)}\right).
+\]
+Because $P$ is uniform,
+\[
+P(\hat h_t)=\frac{1}{N+1}.
+\]
+Therefore
+\[
+\boxed{
+\KL(Q_S\|P)=\log(N+1).
+}
+\]
+
+Since the setting is realizable and the ERM rule returns a consistent threshold,
+\[
+L_S(\hat h_t)=0.
+\]
+Thus
+\[
+L_S(Q_S)
+=
+\mathbb E_{h\sim Q_S}[L_S(h)]
+=
+L_S(\hat h_t)
+=
+0.
+\]
+
+The PAC-Bayes theorem gives, with probability at least $1-\delta$,
+\[
+L_{\mathcal D}(Q)
+\le
+L_S(Q)
++
+\sqrt{
+\frac{
+\KL(Q\|P)+\log(2n/\delta)
+}{
+2(n-1)
+}
+}
+\]
+simultaneously for all posteriors $Q$.
+
+Plugging in $Q=Q_S$, $L_S(Q_S)=0$, and
+\[
+\KL(Q_S\|P)=\log(N+1),
+\]
+we get
+\[
+\boxed{
+L_{\mathcal D}(Q_S)
+\le
+\sqrt{
+\frac{
+\log(N+1)+\log(2n/\delta)
+}{
+2(n-1)
+}
+}.
+}
+\]
+
+This PAC-Bayes certificate scales with $\log(N+1)$ because the point posterior chooses one exact threshold out of $N+1$ possible thresholds under a uniform prior. In contrast, the VC dimension of thresholds is only $1$, because the class can shatter one point but cannot shatter two ordered points. Thus the PAC-Bayes point-posterior bound is paying for identifying a specific hypothesis, while the VC-style bound measures the much smaller combinatorial complexity of the threshold class.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Version-space posterior.}
+Define $a(S) = \max\{x_i : y_i = 0\}$, with $a(S) = 0$if there are no negative examples and define $b(S) = \min\{x_i : y_i = 1\}$, with$b(S) = N+1$ if there are no positive examples. Prove that the set of thresholds consistent with $S$ is
+
+
+\[
+V(S) = \{\, t : a(S) < t \le b(S) \,\},
+\]
+
+
+and hence $|V(S)| = b(S) - a(S)$.
+
+Let $Q_V$ be the uniform posterior over $\{ h_t : t \in V(S) \}$. For the uniform prior 
+$P$ over $\mathcal{H}_N$, compute $\mathrm{KL}(Q_V \,\|\, P)$ exactly. Prove that 
+$L_S(Q_V) = 0$, and explain why $Q_V$ can give a better PAC-Bayes bound than a point 
+posterior when $|V(S)|$ is large.
+
+\begin{solutionbox}
+
+Recall that
+\[
+h_t(x)=\mathbf 1[x\ge t].
+\]
+So a point $x$ is labeled $1$ exactly when
+\[
+x\ge t,
+\]
+and it is labeled $0$ exactly when
+\[
+x<t.
+\]
+
+We want to characterize all thresholds $t$ that are consistent with the sample
+\[
+S=\{(x_i,y_i)\}_{i=1}^n.
+\]
+
+First consider the negative examples. If $y_i=0$, then consistency requires
+\[
+h_t(x_i)=0.
+\]
+Since
+\[
+h_t(x_i)=\mathbf 1[x_i\ge t],
+\]
+this means
+\[
+x_i<t.
+\]
+Therefore, for every negative example,
+\[
+t>x_i.
+\]
+In particular, $t$ must be larger than the largest negative example:
+\[
+t>a(S),
+\]
+where
+\[
+a(S)=\max\{x_i:y_i=0\}.
+\]
+If there are no negative examples, we use the convention $a(S)=0$, and the condition
+\[
+t>0
+\]
+is automatically true for all valid thresholds $t\in\{1,\dots,N+1\}$.
+
+Now consider the positive examples. If $y_i=1$, then consistency requires
+\[
+h_t(x_i)=1.
+\]
+This means
+\[
+x_i\ge t.
+\]
+Equivalently,
+\[
+t\le x_i.
+\]
+Therefore, for every positive example, $t$ must be no larger than that positive example. In particular, $t$ must be no larger than the smallest positive example:
+\[
+t\le b(S),
+\]
+where
+\[
+b(S)=\min\{x_i:y_i=1\}.
+\]
+If there are no positive examples, we use the convention $b(S)=N+1$, and the condition
+\[
+t\le N+1
+\]
+is automatically true for all valid thresholds.
+
+Combining the negative-example condition and the positive-example condition, a threshold $t$ is consistent with $S$ if and only if
+\[
+a(S)<t\le b(S).
+\]
+Therefore,
+\[
+\boxed{
+V(S)=\{t:a(S)<t\le b(S)\}.
+}
+\]
+
+Since thresholds are indexed by integers, the number of integers $t$ satisfying
+\[
+a(S)<t\le b(S)
+\]
+is
+\[
+b(S)-a(S).
+\]
+Hence,
+\[
+\boxed{
+|V(S)|=b(S)-a(S).
+}
+\]
+
+Now let $Q_V$ be the uniform posterior over the consistent thresholds:
+\[
+Q_V(h_t)=\frac{1}{|V(S)|}
+\qquad
+\text{for } t\in V(S),
+\]
+and
+\[
+Q_V(h_t)=0
+\qquad
+\text{for } t\notin V(S).
+\]
+
+The prior $P$ is uniform over all $N+1$ thresholds, so
+\[
+P(h_t)=\frac{1}{N+1}
+\qquad
+\text{for all } t\in\{1,\dots,N+1\}.
+\]
+
+The KL divergence is
+\[
+\KL(Q_V\|P)
+=
+\sum_{h\in\mathcal H_N}
+Q_V(h)\log\left(\frac{Q_V(h)}{P(h)}\right).
+\]
+Only thresholds in $V(S)$ contribute to the sum, so
+\[
+\KL(Q_V\|P)
+=
+\sum_{t\in V(S)}
+\frac{1}{|V(S)|}
+\log\left(
+\frac{1/|V(S)|}{1/(N+1)}
+\right).
+\]
+The logarithm is the same for every $t\in V(S)$, so
+\[
+\KL(Q_V\|P)
+=
+\sum_{t\in V(S)}
+\frac{1}{|V(S)|}
+\log\left(
+\frac{N+1}{|V(S)|}
+\right).
+\]
+Since
+\[
+\sum_{t\in V(S)}\frac{1}{|V(S)|}=1,
+\]
+we get
+\[
+\boxed{
+\KL(Q_V\|P)
+=
+\log\left(\frac{N+1}{|V(S)|}\right).
+}
+\]
+Using $|V(S)|=b(S)-a(S)$, this can also be written as
+\[
+\boxed{
+\KL(Q_V\|P)
+=
+\log\left(\frac{N+1}{b(S)-a(S)}\right).
+}
+\]
+
+Next, we show that
+\[
+L_S(Q_V)=0.
+\]
+By definition,
+\[
+L_S(Q_V)
+=
+\mathbb E_{h\sim Q_V}[L_S(h)].
+\]
+But every threshold $h_t$ with $t\in V(S)$ is consistent with the sample. Therefore,
+\[
+L_S(h_t)=0
+\qquad
+\text{for every } t\in V(S).
+\]
+Since $Q_V$ only places mass on thresholds in $V(S)$,
+\[
+L_S(Q_V)
+=
+\frac{1}{|V(S)|}\sum_{t\in V(S)}L_S(h_t)
+=
+0.
+\]
+Thus,
+\[
+\boxed{
+L_S(Q_V)=0.
+}
+\]
+
+The PAC-Bayes bound for $Q_V$ becomes
+\[
+L_{\mathcal D}(Q_V)
+\le
+\sqrt{
+\frac{
+\log\left(\frac{N+1}{|V(S)|}\right)+\log(2n/\delta)
+}{
+2(n-1)
+}
+}.
+\]
+
+This can be better than the point-posterior bound when $|V(S)|$ is large. A point posterior pays
+\[
+\log(N+1),
+\]
+because it puts all mass on one threshold. The version-space posterior spreads its mass over all thresholds that are consistent with the data, so it pays only
+\[
+\log\left(\frac{N+1}{|V(S)|}\right).
+\]
+Thus, when many thresholds remain consistent with the sample, the KL term is smaller, which gives a potentially tighter PAC-Bayes certificate.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{Spreading helps KL, but can hurt true risk.}
+Let $P$ be the uniform prior over $\mathcal{H}_N$. Let $\mathcal{D}$ be the realizable 
+distribution whose marginal on $\mathcal{X}_N$ is uniform and whose labels are generated 
+by $h_\tau$. For any nonempty set $W \subseteq \{1,\dots, N+1\}$, let $Q_W$ be uniform 
+over $\{ h_t : t \in W \}$. Prove that
+
+
+\[
+L_{\mathcal{D}}(Q_W)
+=
+\frac{1}{N |W|}
+\sum_{t \in W} |t - \tau|.
+\]
+
+
+
+Construct a concrete example with $N \ge 20$, a true threshold $\tau$, and a realizable 
+sample $S$ such that $|V(S)|$ is large,
+
+
+\[
+\mathrm{KL}(Q_{V(S)} \,\|\, P)
+\;<\;
+\mathrm{KL}(\delta_{h_\tau} \,\|\, P),
+\]
+
+
+but
+
+
+\[
+L_{\mathcal{D}}(Q_{V(S)})
+\;>\;
+L_{\mathcal{D}}(\delta_{h_\tau}).
+\]
+
+
+
+Explain why this does not contradict PAC-Bayes.
+
+\begin{solutionbox}
+
+The distribution $\calD$ has $X$ uniform on
+\[
+\calX_N=\{1,2,\dots,N\},
+\]
+and labels are generated by the true threshold $h_\tau$:
+\[
+Y=h_\tau(X)=\mathbf 1[X\ge \tau].
+\]
+
+First consider the disagreement between two thresholds $h_t$ and $h_\tau$.
+
+If $t>\tau$, then $h_\tau$ labels
+\[
+\tau,\tau+1,\dots,t-1
+\]
+as $1$, while $h_t$ labels those same points as $0$. These are exactly
+\[
+t-\tau
+\]
+points of disagreement.
+
+If $t<\tau$, then $h_t$ labels
+\[
+t,t+1,\dots,\tau-1
+\]
+as $1$, while $h_\tau$ labels those same points as $0$. These are exactly
+\[
+\tau-t
+\]
+points of disagreement.
+
+If $t=\tau$, the two thresholds agree everywhere. Therefore, in all cases, the number of points where $h_t$ and $h_\tau$ disagree is
+\[
+|t-\tau|.
+\]
+
+Since $X$ is uniform on $N$ points,
+\[
+L_{\calD}(h_t)
+=
+\mathbb P_{X\sim \mathrm{Unif}(\calX_N)}[h_t(X)\neq h_\tau(X)]
+=
+\frac{|t-\tau|}{N}.
+\]
+
+Now $Q_W$ is uniform over $\{h_t:t\in W\}$, so
+\[
+L_{\calD}(Q_W)
+=
+\mathbb E_{h\sim Q_W}[L_{\calD}(h)]
+=
+\frac{1}{|W|}\sum_{t\in W}L_{\calD}(h_t).
+\]
+
+Substituting the formula above,
+\[
+L_{\calD}(Q_W)
+=
+\frac{1}{|W|}\sum_{t\in W}\frac{|t-\tau|}{N}.
+\]
+
+Thus,
+\[
+\boxed{
+L_{\calD}(Q_W)
+=
+\frac{1}{N|W|}
+\sum_{t\in W}|t-\tau|.
+}
+\]
+
+Now construct a concrete example. Take
+\[
+N=20
+\qquad\text{and}\qquad
+\tau=10.
+\]
+Thus the true classifier is
+\[
+h_{10}(x)=\mathbf 1[x\ge 10].
+\]
+
+Consider the sample
+\[
+S=\{(15,1)\}.
+\]
+This sample is realizable by $h_{10}$ because
+\[
+15\ge 10,
+\]
+so
+\[
+h_{10}(15)=1.
+\]
+
+There are no negative examples in $S$, so
+\[
+a(S)=0.
+\]
+The smallest positive example is $15$, so
+\[
+b(S)=15.
+\]
+Therefore the version space is
+\[
+V(S)=\{t:a(S)<t\le b(S)\}
+=
+\{t:0<t\le 15\}.
+\]
+Hence
+\[
+V(S)=\{1,2,\dots,15\}
+\]
+and
+\[
+|V(S)|=15.
+\]
+This is large relative to the total number of thresholds, which is
+\[
+N+1=21.
+\]
+
+Now compare the KL terms. Since $P$ is uniform over $\mathcal H_N$,
+\[
+P(h_t)=\frac{1}{21}
+\]
+for every threshold $h_t$.
+
+For the version-space posterior,
+\[
+\KL(Q_{V(S)}\|P)
+=
+\log\left(\frac{N+1}{|V(S)|}\right)
+=
+\log\left(\frac{21}{15}\right).
+\]
+
+For the point posterior on the true threshold,
+\[
+\KL(\delta_{h_\tau}\|P)
+=
+\KL(\delta_{h_{10}}\|P)
+=
+\log(21).
+\]
+
+Since
+\[
+\frac{21}{15}<21,
+\]
+we have
+\[
+\boxed{
+\KL(Q_{V(S)}\|P)
+<
+\KL(\delta_{h_\tau}\|P).
+}
+\]
+
+So spreading mass over the large version space gives a smaller KL term.
+
+However, the true risk is worse. The point posterior on the true threshold has
+\[
+L_{\calD}(\delta_{h_\tau})
+=
+L_{\calD}(h_{10})
+=
+0,
+\]
+because the labels are generated by $h_{10}$.
+
+For the version-space posterior,
+\[
+L_{\calD}(Q_{V(S)})
+=
+\frac{1}{N|V(S)|}
+\sum_{t\in V(S)}|t-\tau|.
+\]
+Substituting $N=20$, $\tau=10$, and $V(S)=\{1,\dots,15\}$,
+\[
+L_{\calD}(Q_{V(S)})
+=
+\frac{1}{20\cdot 15}
+\sum_{t=1}^{15}|t-10|.
+\]
+
+Now compute the sum:
+\[
+\sum_{t=1}^{15}|t-10|
+=
+9+8+7+6+5+4+3+2+1+0+1+2+3+4+5.
+\]
+The terms to the left of $10$ sum to
+\[
+1+2+\cdots+9=45,
+\]
+and the terms to the right of $10$ sum to
+\[
+1+2+3+4+5=15.
+\]
+So
+\[
+\sum_{t=1}^{15}|t-10|=60.
+\]
+Therefore
+\[
+L_{\calD}(Q_{V(S)})
+=
+\frac{60}{20\cdot 15}
+=
+\frac{60}{300}
+=
+\frac15.
+\]
+
+Thus,
+\[
+\boxed{
+L_{\calD}(Q_{V(S)})=\frac15
+>
+0
+=
+L_{\calD}(\delta_{h_\tau}).
+}
+\]
+
+This example shows that spreading the posterior can reduce KL, but it can also place mass on bad hypotheses. The sample $S=\{(15,1)\}$ does not rule out many thresholds far away from the true threshold $10$, so the version-space posterior averages over several incorrect classifiers.
+
+This does not contradict PAC-Bayes. PAC-Bayes gives an upper bound on the true risk in terms of empirical risk and KL. It does not say that the posterior with smaller KL must always have smaller true risk. A smaller KL term can help the bound, but if the posterior spreads mass over hypotheses with nonzero true error, the actual true risk can still be larger than the risk of the true point posterior.
+
+\end{solutionbox}
+
+% =====================================================
+
+\subsection{ Every fixed prior can be attacked.}
+Let $P$ be any prior over $\mathcal{H}_N$, fixed before seeing the sample. Assume 
+$N \ge 3$. Prove that there exists an internal threshold $\tau \in \{2,\dots, N\}$ such that
+
+
+\[
+P(h_\tau) \;\le\; \frac{1}{N-1}.
+\]
+
+
+
+For this $\tau$, define a realizable distribution $\mathcal{D}_\tau$ by
+
+
+\[
+\Pr_{(x,y)\sim \mathcal{D}_\tau}[x = \tau - 1,\, y = 0] = \frac{1}{2},
+\qquad
+\Pr_{(x,y)\sim \mathcal{D}_\tau}[x = \tau,\, y = 1] = \frac{1}{2}.
+\]
+
+
+
+Prove that with probability at least $1 - 2^{1-n}$ over $S \sim \mathcal{D}_\tau^{\,n}$, 
+the sample contains both support points.
+
+On this event, prove that $V(S) = \{\tau\}$. Conclude that any posterior $Q$ with 
+$L_S(Q) = 0$ must be $Q = \delta_{h_\tau}$. Prove that, on this event,
+
+
+\[
+\mathrm{KL}(Q \,\|\, P) \;\ge\; \log(N-1)
+\]
+
+
+for every zero-empirical-error posterior $Q$.
+
+Explain what this lower bound does and does not show. In particular, why is it a 
+limitation of zero-empirical-error PAC-Bayes certificates with a fixed prior, rather 
+than a lower bound on the sample complexity of learning thresholds?
+\begin{solutionbox}
+
+We first prove the existence of an internal threshold with small prior mass.
+
+The internal thresholds are
+\[
+h_2,h_3,\dots,h_N.
+\]
+There are exactly
+\[
+N-1
+\]
+of them. Since $P$ is a probability distribution over all thresholds in $\mathcal H_N$,
+\[
+\sum_{t=1}^{N+1}P(h_t)=1.
+\]
+Therefore,
+\[
+\sum_{t=2}^{N}P(h_t)\le 1.
+\]
+
+If every internal threshold had prior mass strictly larger than $1/(N-1)$, then
+\[
+\sum_{t=2}^{N}P(h_t)
+>
+(N-1)\cdot \frac{1}{N-1}
+=
+1,
+\]
+which is impossible. Hence there exists some
+\[
+\tau\in\{2,\dots,N\}
+\]
+such that
+\[
+\boxed{
+P(h_\tau)\le \frac{1}{N-1}.
+}
+\]
+
+Now define the distribution $\mathcal D_\tau$ by
+\[
+\Pr[(X,Y)=(\tau-1,0)]=\frac12
+\]
+and
+\[
+\Pr[(X,Y)=(\tau,1)]=\frac12.
+\]
+
+This distribution is realizable by $h_\tau$ because
+\[
+h_\tau(\tau-1)
+=
+\mathbf 1[\tau-1\ge \tau]
+=
+0,
+\]
+and
+\[
+h_\tau(\tau)
+=
+\mathbf 1[\tau\ge \tau]
+=
+1.
+\]
+
+Now draw
+\[
+S\sim \mathcal D_\tau^n.
+\]
+The sample contains both support points unless all $n$ examples are the first point or all $n$ examples are the second point.
+
+The probability that all $n$ samples equal $(\tau-1,0)$ is
+\[
+\left(\frac12\right)^n.
+\]
+The probability that all $n$ samples equal $(\tau,1)$ is also
+\[
+\left(\frac12\right)^n.
+\]
+Thus the probability that the sample fails to contain both support points is
+\[
+\left(\frac12\right)^n+\left(\frac12\right)^n
+=
+2\left(\frac12\right)^n
+=
+2^{1-n}.
+\]
+
+Therefore, with probability at least
+\[
+\boxed{
+1-2^{1-n},
+}
+\]
+the sample contains both support points.
+
+Now work on the event that both support points appear in the sample. Then the sample contains at least one negative example at
+\[
+x=\tau-1
+\]
+and at least one positive example at
+\[
+x=\tau.
+\]
+
+Recall that
+\[
+a(S)=\max\{x_i:y_i=0\}.
+\]
+Since the only negative support point under $\mathcal D_\tau$ is $\tau-1$, we get
+\[
+a(S)=\tau-1.
+\]
+
+Also,
+\[
+b(S)=\min\{x_i:y_i=1\}.
+\]
+Since the only positive support point under $\mathcal D_\tau$ is $\tau$, we get
+\[
+b(S)=\tau.
+\]
+
+From the version-space characterization,
+\[
+V(S)=\{t:a(S)<t\le b(S)\}.
+\]
+Substituting $a(S)=\tau-1$ and $b(S)=\tau$ gives
+\[
+V(S)
+=
+\{t:\tau-1<t\le \tau\}.
+\]
+Since $t$ is an integer threshold index, the only possible value is
+\[
+t=\tau.
+\]
+Therefore,
+\[
+\boxed{
+V(S)=\{\tau\}.
+}
+\]
+
+Now let $Q$ be any posterior satisfying
+\[
+L_S(Q)=0.
+\]
+By definition,
+\[
+L_S(Q)
+=
+\mathbb E_{h\sim Q}[L_S(h)].
+\]
+Since empirical loss is always nonnegative, the only way this expectation can equal zero is if $Q$ puts probability only on hypotheses with zero empirical loss.
+
+But on this event, the only threshold with zero empirical loss is $h_\tau$, because
+\[
+V(S)=\{\tau\}.
+\]
+Therefore,
+\[
+\boxed{
+Q=\delta_{h_\tau}.
+}
+\]
+
+Now compute the KL divergence. Since $Q=\delta_{h_\tau}$,
+\[
+\KL(Q\|P)
+=
+\KL(\delta_{h_\tau}\|P)
+=
+\log\left(\frac{1}{P(h_\tau)}\right).
+\]
+
+From the first part,
+\[
+P(h_\tau)\le \frac{1}{N-1}.
+\]
+Taking reciprocals,
+\[
+\frac{1}{P(h_\tau)}
+\ge
+N-1.
+\]
+Thus,
+\[
+\log\left(\frac{1}{P(h_\tau)}\right)
+\ge
+\log(N-1).
+\]
+
+Hence, on the event that both support points appear,
+\[
+\boxed{
+\KL(Q\|P)\ge \log(N-1)
+}
+\]
+for every posterior $Q$ with zero empirical error.
+
+This lower bound shows that for every fixed prior $P$, there is a realizable threshold problem where any zero-empirical-error PAC-Bayes posterior must pay a KL cost of at least
+\[
+\log(N-1).
+\]
+So a fixed prior cannot always avoid a logarithmic dependence on the number of thresholds when the posterior is required to have zero empirical error.
+
+However, this is not a lower bound on the sample complexity of learning thresholds. Thresholds have VC dimension $1$, so they can be learned with sample complexity controlled by a constant-dimensional VC bound. The lower bound only shows a limitation of a particular PAC-Bayes certificate style: fixed prior plus zero empirical error. It says that this certificate can be forced to contain a large KL term, not that every learning algorithm needs $\log N$ samples to learn thresholds.
+
+\end{solutionbox}
+
+% =====================================================
+\section{Part C: AI Report}
+% =====================================================
+\begin{solutionbox}
+
+AI was used in this assignment primarily as a tool for structuring proofs, checking intermediate steps, and refining explanations. It helped organize the arguments in Parts A and B, especially in separating the roles of support selection, sparsity level selection, and validation-based model selection. It was also used to verify algebraic manipulations, growth function bounds, and PAC-Bayes calculations.
+
+In particular, AI assistance was useful for:
+\begin{itemize}
+\item verifying the VC-dimension argument for sparse linear predictors,
+\item checking the derivation of SRM and validation oracle inequalities,
+\item computing KL divergences for both point posteriors and version-space posteriors,
+\item constructing concrete examples (such as the threshold example with $N=20$) to test theoretical claims.
+\end{itemize}
+
+All results were independently reviewed for correctness. Each inequality and bound was checked against the definitions or theorems used (such as Sauer’s lemma, VC generalization bounds, and the PAC-Bayes inequality). Numerical examples were recomputed manually to confirm correctness.
+
+This assignment led to several improvements in workflow:
+\begin{itemize}
+\item adopting a proof-first approach, where the structure of the argument is written before refining details,
+\item explicitly tracking the source of each logarithmic term (support selection, sparsity level selection, or model selection),
+\item validating abstract theoretical results with concrete finite examples,
+\item clearly separating statistical guarantees (sample complexity) from computational considerations (runtime).
+\end{itemize}
+
+Overall, AI was used as a supporting tool for reasoning and verification, not as a replacement for understanding. The final write-up reflects independently verified arguments.
+
+\end{solutionbox}
+
+% =====================================================
+\appendix
+% =====================================================
+
+\section{Lean Artifact Map}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+File & Problem & Purpose \\
+\midrule
+A5\_SparseComputation & A.5 & Runtime \\
+B2\_VersionSpace & B.2 & Interval proof \\
+B3\_ThresholdRisk & B.3 & Risk formula \\
+B4\_PriorAttack & B.4 & Pigeonhole \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
