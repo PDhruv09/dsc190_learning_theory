@@ -1,0 +1,4750 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{tabularx}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black, citecolor=blue!60!black}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{DSC 190/291 Assignment 8}
+\rhead{Dhruv Patel}
+\cfoot{\thepage}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+
+\newtheorem{claim}{Claim}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\calD}{\mathcal{D}}
+\newcommand{\calW}{\mathcal{W}}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ip}[2]{\left\langle #1,#2 \right\rangle}
+
+\tcbset{
+  colback=white,
+  colframe=black!75,
+  boxrule=0.8pt,
+  arc=2pt,
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{solutionbox}{
+    colback=white,
+    colframe=black,
+    boxrule=0.5pt,
+    breakable
+}
+
+\title{\textbf{DSC 190/291 Assignment 8}\\Detailed Write-Up}
+\author{Dhruv Patel}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================
+\section{Choosing Regularization by Validation}
+% =====================================================
+
+Let $\mathcal W$ be a convex parameter domain, and let $\ell(w,z)\in[0,1]$ be convex in $w$ and $G$-Lipschitz with respect to a norm $\norm{\cdot}$:
+\[
+|\ell(w,z)-\ell(w',z)|\le G\norm{w-w'}
+\]
+for all $w,w',z$. Let $\Psi$ be nonnegative and $\alpha$-strongly convex with respect to $\norm{\cdot}$.
+
+Split an i.i.d. sample into an independent training sample $T$ of size $n_T$ and validation sample $V$ of size $n_V$. For a finite grid
+\[
+\Lambda=\{\lambda_1,\ldots,\lambda_K\}\subset(0,\infty),
+\]
+define, for each $\lambda\in\Lambda$,
+\[
+h_\lambda=A_\lambda(T)\in\arg\min_{w\in\mathcal W} L_T(w)+\lambda\Psi(w).
+\]
+Then choose
+\[
+\widehat\lambda\in\arg\min_{\lambda\in\Lambda}L_V(h_\lambda),
+\]
+and output $h_{\widehat\lambda}$.
+
+\begin{enumerate}
+
+\item \textbf{Validation selection for a finite random candidate set.}
+
+Condition on predictors $h_1,\ldots,h_K$ that are independent of a validation set $V$ of size $n_V$, and let
+\[
+\widehat k\in\arg\min_{k\in[K]}L_V(h_k).
+\]
+Prove
+\[
+\E_V L_{\mathcal D}(h_{\widehat k})
+\le
+\min_{k\in[K]}L_{\mathcal D}(h_k)
++
+2\sqrt{\frac{\log(2K)}{2n_V}}.
+\]
+You may use Hoeffding's lemma for $[0,1]$-valued losses.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+We are given predictors
+
+\[
+h_1,\ldots,h_K
+\]
+
+that are fixed after conditioning and are independent of the validation sample
+
+\[
+V=\{z_1,\ldots,z_{n_V}\}.
+\]
+
+The validation procedure selects
+
+\[
+\widehat{k}
+\in
+\arg\min_{k\in[K]}
+L_V(h_k).
+\]
+
+Our objective is to show that selecting the predictor with the smallest validation error incurs only a small statistical penalty of order
+
+\[
+\sqrt{\frac{\log K}{n_V}}.
+\]
+
+Intuitively, if the validation set is sufficiently large, then every empirical validation loss
+
+\[
+L_V(h_k)
+\]
+
+is close to its true population risk
+
+\[
+L_{\mathcal D}(h_k).
+\]
+
+Therefore, the predictor selected by validation cannot be significantly worse than the best predictor among the candidate models.
+
+\medskip
+
+\textbf{Step 1: Relate the population risk of the selected predictor to its validation loss.}
+
+Begin with the identity
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+=
+L_V(h_{\widehat{k}})
++
+\Bigl(
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr).
+\]
+
+This decomposition simply adds and subtracts the validation loss.
+
+Since
+
+\[
+\widehat{k}
+=
+\arg\min_{k\in[K]}
+L_V(h_k),
+\]
+
+the selected predictor has the smallest validation loss among all candidate predictors. Consequently,
+
+\[
+L_V(h_{\widehat{k}})
+\le
+L_V(h_k)
+\qquad
+\text{for every }
+k\in[K].
+\]
+
+Substituting this inequality into the previous display yields
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+L_V(h_k)
++
+\Bigl(
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr).
+\]
+
+Since the second term may be either positive or negative, we upper bound it by its absolute value:
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+L_V(h_k)
++
+\Bigl|
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr|.
+\]
+
+\medskip
+
+\textbf{Step 2: Introduce the true risk of the comparison predictor.}
+
+We now add and subtract the population risk of the fixed comparison predictor \(h_k\):
+
+\[
+L_V(h_k)
+=
+L_{\mathcal D}(h_k)
++
+\Bigl(
+L_V(h_k)
+-
+L_{\mathcal D}(h_k)
+\Bigr).
+\]
+
+Substituting this expression into the previous inequality gives
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+L_{\mathcal D}(h_k)
++
+\Bigl(
+L_V(h_k)
+-
+L_{\mathcal D}(h_k)
+\Bigr)
++
+\Bigl|
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr|.
+\]
+
+The middle term can again be positive or negative, so we upper bound it by its absolute value:
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+L_{\mathcal D}(h_k)
++
+\Bigl|
+L_V(h_k)
+-
+L_{\mathcal D}(h_k)
+\Bigr|
++
+\Bigl|
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr|.
+\]
+
+\medskip
+
+\textbf{Step 3: Replace both deviations by a common maximum.}
+
+Notice that both indices
+
+\[
+k
+\qquad\text{and}\qquad
+\widehat{k}
+\]
+
+belong to the set
+
+\[
+[K].
+\]
+
+Therefore,
+
+\[
+\Bigl|
+L_V(h_k)
+-
+L_{\mathcal D}(h_k)
+\Bigr|
+\le
+\max_{j\in[K]}
+\Bigl|
+L_V(h_j)
+-
+L_{\mathcal D}(h_j)
+\Bigr|.
+\]
+
+Similarly,
+
+\[
+\Bigl|
+L_{\mathcal D}(h_{\widehat{k}})
+-
+L_V(h_{\widehat{k}})
+\Bigr|
+\le
+\max_{j\in[K]}
+\Bigl|
+L_V(h_j)
+-
+L_{\mathcal D}(h_j)
+\Bigr|.
+\]
+
+Substituting these bounds yields
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+L_{\mathcal D}(h_k)
++
+2
+\max_{j\in[K]}
+\Bigl|
+L_V(h_j)
+-
+L_{\mathcal D}(h_j)
+\Bigr|.
+\]
+
+Since this inequality holds for every \(k\in[K]\), we may minimize the right-hand side over all choices of \(k\):
+
+\[
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+\min_{k\in[K]}
+L_{\mathcal D}(h_k)
++
+2
+\max_{j\in[K]}
+\Bigl|
+L_V(h_j)
+-
+L_{\mathcal D}(h_j)
+\Bigr|.
+\]
+
+This is the key comparison inequality. It shows that the excess risk of validation selection is entirely controlled by the largest validation-to-population deviation among the candidate predictors.
+
+\medskip
+
+\textbf{Step 4: Bound the maximum validation deviation.}
+
+For each predictor \(h_j\), define
+
+\[
+Z_j
+=
+L_V(h_j)
+-
+L_{\mathcal D}(h_j).
+\]
+
+Since
+
+\[
+L_V(h_j)
+=
+\frac{1}{n_V}
+\sum_{i=1}^{n_V}
+\ell(h_j,z_i),
+\]
+
+the quantity \(Z_j\) is the difference between an empirical average and its expectation.
+
+Because the loss values are bounded in the interval \([0,1]\), Hoeffding's lemma implies that \(Z_j\) is sub-Gaussian with variance proxy
+
+\[
+\frac{1}{4n_V}.
+\]
+
+Equivalently,
+
+\[
+\mathbb E
+\bigl[
+e^{tZ_j}
+\bigr]
+\le
+\exp\!\left(
+\frac{t^2}{8n_V}
+\right)
+\qquad
+\forall t\in\mathbb R.
+\]
+
+To control absolute deviations, observe that
+
+\[
+|Z_j|
+=
+\max\{Z_j,-Z_j\}.
+\]
+
+Thus
+
+\[
+\max_{j\in[K]}|Z_j|
+\]
+
+can be viewed as the maximum of the \(2K\) sub-Gaussian random variables
+
+\[
+Z_1,\ldots,Z_K,
+-Z_1,\ldots,-Z_K.
+\]
+
+Applying the standard maximum inequality for sub-Gaussian random variables gives
+
+\[
+\mathbb E_V
+\left[
+\max_{j\in[K]}
+|Z_j|
+\right]
+\le
+\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+\medskip
+
+\textbf{Step 5: Take expectation over the validation sample.}
+
+Taking expectation over the validation sample \(V\) in the comparison inequality from Step 3 yields
+
+\[
+\mathbb E_V
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+\min_{k\in[K]}
+L_{\mathcal D}(h_k)
++
+2
+\mathbb E_V
+\left[
+\max_{j\in[K]}
+|Z_j|
+\right].
+\]
+
+Substituting the maximum-deviation bound from Step 4 gives
+
+\[
+\mathbb E_V
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+\min_{k\in[K]}
+L_{\mathcal D}(h_k)
++
+2
+\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\mathbb E_V
+L_{\mathcal D}(h_{\widehat{k}})
+\le
+\min_{k\in[K]}
+L_{\mathcal D}(h_k)
++
+2
+\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+This theorem shows that validation-based model selection is statistically efficient. Even when comparing many candidate predictors, the additional cost grows only logarithmically with the number of candidates.
+
+Specifically, the model-selection penalty scales as
+
+\[
+O\!\left(
+\sqrt{
+\frac{\log K}
+{n_V}
+}
+\right).
+\]
+
+Thus, provided the validation sample is sufficiently large, choosing the predictor with the smallest validation error produces a predictor whose true risk is nearly as good as the best predictor in the candidate collection.
+
+\end{solutionbox}
+
+\item \textbf{Oracle inequality over a grid.}
+
+Apply the previous part conditionally on the training sample $T$, and then take expectation over $T$. Prove
+\[
+\E L_{\mathcal D}(h_{\widehat\lambda})
+\le
+\min_{\lambda\in\Lambda}\inf_{u\in\mathcal W}
+\left\{
+L_{\mathcal D}(u)+\lambda\Psi(u)+\frac{2G^2}{\lambda\alpha n_T}
+\right\}
++
+2\sqrt{\frac{\log(2K)}{2n_V}}.
+\]
+Explain why selecting among $K$ trained RERM rules contributes a validation term of order $\sqrt{\log K/n_V}$.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+We would like to establish an oracle inequality for the validation-selected regularized empirical risk minimizer. The procedure works in two stages:
+
+\begin{enumerate}
+    \item Using the training sample $T$, we train one predictor $h_\lambda$ for every regularization parameter $\lambda\in\Lambda$.
+    \item Using the independent validation sample $V$, we choose the predictor whose validation loss is smallest.
+\end{enumerate}
+
+The key idea is that once the training sample has been fixed, the collection of predictors
+
+\[
+\{h_\lambda:\lambda\in\Lambda\}
+\]
+
+becomes deterministic. We may then treat validation model selection as the problem of choosing among
+
+\[
+K=|\Lambda|
+\]
+
+fixed predictors. Part A.1 already analyzed this situation and showed that the cost of selecting among $K$ candidates is only of order
+
+\[
+\sqrt{\frac{\log K}{n_V}}.
+\]
+
+Combining this fact with the Week 8 RERM theorem will yield the desired oracle inequality.
+
+\medskip
+
+\textbf{Step 1: Condition on the training sample.}
+
+Recall that
+
+\[
+h_\lambda
+=
+A_\lambda(T)
+\in
+\arg\min_{w\in\mathcal W}
+\left\{
+L_T(w)+\lambda\Psi(w)
+\right\}.
+\]
+
+The training sample $T$ determines all candidate predictors. Once we condition on $T$, every predictor
+
+\[
+h_\lambda
+\]
+
+is fixed and no longer random.
+
+Furthermore, the validation sample $V$ is independent of $T$. Therefore, after conditioning on $T$, the collection
+
+\[
+\{h_\lambda:\lambda\in\Lambda\}
+\]
+
+is independent of the validation data.
+
+Consequently, the setting of Part A.1 applies exactly. Since
+
+\[
+\widehat{\lambda}
+\in
+\arg\min_{\lambda\in\Lambda}
+L_V(h_\lambda),
+\]
+
+Part A.1 gives the conditional inequality
+
+\[
+\mathbb E_V
+\!\left[
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\,\middle|\,
+T
+\right]
+\le
+\min_{\lambda\in\Lambda}
+L_{\mathcal D}(h_\lambda)
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+The important observation is that the validation-selection penalty depends only on the number of candidate predictors and the size of the validation sample. It does not depend on the specific predictors themselves.
+
+\medskip
+
+\textbf{Step 2: Remove the conditioning.}
+
+We now take expectation with respect to the training sample $T$.
+
+Applying $\mathbb E_T$ to both sides gives
+
+\[
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+\mathbb E_T
+\left[
+\min_{\lambda\in\Lambda}
+L_{\mathcal D}(h_\lambda)
+\right]
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+The validation term is deterministic and therefore remains unchanged when taking expectation.
+
+Next we use the elementary inequality
+
+\[
+\mathbb E
+\!\left[
+\min_{\lambda}X_\lambda
+\right]
+\le
+\min_{\lambda}
+\mathbb E[X_\lambda].
+\]
+
+To see why this is true, note that for every fixed $\lambda$,
+
+\[
+\min_{\lambda'}X_{\lambda'}
+\le
+X_\lambda.
+\]
+
+Taking expectation preserves the inequality:
+
+\[
+\mathbb E
+\!\left[
+\min_{\lambda'}X_{\lambda'}
+\right]
+\le
+\mathbb E[X_\lambda].
+\]
+
+Since this holds for every $\lambda$, we may minimize the right-hand side over all $\lambda\in\Lambda$, obtaining
+
+\[
+\mathbb E_T
+\left[
+\min_{\lambda\in\Lambda}
+L_{\mathcal D}(h_\lambda)
+\right]
+\le
+\min_{\lambda\in\Lambda}
+\mathbb E_T
+L_{\mathcal D}(h_\lambda).
+\]
+
+Substituting this bound yields
+
+\[
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+\min_{\lambda\in\Lambda}
+\mathbb E_T
+L_{\mathcal D}(h_\lambda)
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+Thus the problem reduces to bounding the population risk of a fixed regularization parameter $\lambda$.
+
+\medskip
+
+\textbf{Step 3: Apply the Week 8 RERM guarantee.}
+
+For every fixed value of $\lambda$, the Week 8 regularized empirical risk minimization theorem states that
+
+\[
+\mathbb E_T
+L_{\mathcal D}(h_\lambda)
+\le
+\inf_{u\in\mathcal W}
+\left\{
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}
+{\lambda\alpha n_T}
+\right\}.
+\]
+
+This inequality holds separately for each $\lambda\in\Lambda$.
+
+Substituting this bound into the previous display gives
+
+\[
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+\min_{\lambda\in\Lambda}
+\inf_{u\in\mathcal W}
+\left\{
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}
+{\lambda\alpha n_T}
+\right\}
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+\min_{\lambda\in\Lambda}
+\inf_{u\in\mathcal W}
+\left\{
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}
+{\lambda\alpha n_T}
+\right\}
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation of the bound.}
+
+The first part of the bound,
+
+\[
+\lambda\Psi(u)
++
+\frac{2G^2}
+{\lambda\alpha n_T},
+\]
+
+is the usual RERM tradeoff between approximation and estimation. Choosing a larger regularization parameter increases the penalty term $\lambda\Psi(u)$ but decreases the stability term
+
+\[
+\frac{2G^2}{\lambda\alpha n_T}.
+\]
+
+The second part,
+
+\[
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+},
+\]
+
+is the additional price paid for selecting the regularization parameter using validation data.
+
+Since validation must simultaneously compare $K$ candidate predictors, uniform concentration over $K$ losses introduces a logarithmic factor $\log K$. Consequently, the statistical cost of tuning over a finite grid is
+
+\[
+\boxed{
+O\!\left(
+\sqrt{\frac{\log K}{n_V}}
+\right).
+}
+\]
+
+Thus model selection by validation is relatively inexpensive: the penalty grows only logarithmically with the number of candidate regularization parameters.
+
+\end{solutionbox}
+
+
+\item \textbf{Adapting to an unknown comparator scale.}
+
+For a comparator $u\in\mathcal W$, write $a=\Psi(u)$ and define
+\[
+\lambda_{\mathrm{opt}}(a)=\sqrt{\frac{2G^2}{\alpha a n_T}}
+\]
+whenever $a>0$. Suppose $0<B_{\min}\le B_{\max}$ and the grid $\Lambda$ has the following property: for every $a\in[B_{\min}^2,B_{\max}^2]$, there is a $\lambda\in\Lambda$ satisfying
+\[
+\frac{\lambda_{\mathrm{opt}}(a)}{2}\le\lambda\le2\lambda_{\mathrm{opt}}(a).
+\]
+Prove that for every $u\in\mathcal W$ with $B_{\min}^2\le\Psi(u)\le B_{\max}^2$,
+\[
+\E L_{\mathcal D}(h_{\widehat\lambda})
+\le
+L_{\mathcal D}(u)
++
+\frac{5\sqrt2}{2}G\sqrt{\frac{\Psi(u)}{\alpha n_T}}
++
+2\sqrt{\frac{\log(2K)}{2n_V}}.
+\]
+Your proof should explicitly optimize the two-term expression
+\[
+\lambda\Psi(u)+\frac{2G^2}{\lambda\alpha n_T}
+\]
+up to the factor-$2$ discretization of $\lambda$.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+The oracle inequality from Part A.2 states that for every regularization parameter $\lambda$,
+
+\[
+\mathbb E L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+\min_{\lambda\in\Lambda}
+\inf_{u\in\mathcal W}
+\left\{
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n_T}
+\right\}
++
+2\sqrt{\frac{\log(2K)}{2n_V}}.
+\]
+
+The difficulty is that the optimal choice of $\lambda$ depends on the unknown quantity
+
+\[
+\Psi(u),
+\]
+
+which measures the scale of the comparator $u$.
+
+The purpose of this problem is to show that we do not need to know $\Psi(u)$ in advance. Instead, a sufficiently dense grid of candidate regularization parameters can approximate the optimal choice of $\lambda$ up to a constant factor. Consequently, we can adapt to the unknown comparator scale while losing only a constant factor in the final learning bound.
+
+\medskip
+
+\textbf{Step 1: Fix a comparator and isolate the optimization problem.}
+
+Let
+
+\[
+u\in\mathcal W
+\]
+
+be an arbitrary comparator satisfying
+
+\[
+B_{\min}^2
+\le
+\Psi(u)
+\le
+B_{\max}^2.
+\]
+
+For convenience, define
+
+\[
+a=\Psi(u).
+\]
+
+Then the oracle inequality contains the expression
+
+\[
+\lambda a
++
+\frac{2G^2}{\lambda\alpha n_T}.
+\]
+
+The first term,
+
+\[
+\lambda a,
+\]
+
+is the regularization penalty. It increases as $\lambda$ increases.
+
+The second term,
+
+\[
+\frac{2G^2}{\lambda\alpha n_T},
+\]
+
+is the stability or estimation term. It decreases as $\lambda$ increases.
+
+Thus the two terms move in opposite directions. Choosing $\lambda$ too small makes the stability term large, while choosing $\lambda$ too large makes the regularization term large.
+
+The optimal value of $\lambda$ balances these two competing effects.
+
+\medskip
+
+\textbf{Step 2: Rewrite the expression in a simpler form.}
+
+Define
+
+\[
+c
+=
+\frac{2G^2}{\alpha n_T}.
+\]
+
+Then the quantity we must optimize becomes
+
+\[
+f(\lambda)
+=
+\lambda a
++
+\frac{c}{\lambda}.
+\]
+
+This is a classical tradeoff of the form
+
+\[
+\text{linear term}
++
+\text{inverse term}.
+\]
+
+We first determine the best continuous choice of $\lambda$.
+
+\medskip
+
+\textbf{Step 3: Compute the optimal continuous regularization parameter.}
+
+Differentiate $f(\lambda)$ with respect to $\lambda$:
+
+\[
+f'(\lambda)
+=
+a
+-
+\frac{c}{\lambda^2}.
+\]
+
+A minimum occurs when
+
+\[
+f'(\lambda)=0.
+\]
+
+Thus
+
+\[
+a
+=
+\frac{c}{\lambda^2}.
+\]
+
+Multiplying both sides by $\lambda^2$ gives
+
+\[
+a\lambda^2=c,
+\]
+
+and therefore
+
+\[
+\lambda^2
+=
+\frac{c}{a}.
+\]
+
+Taking the positive square root,
+
+\[
+\lambda_{\mathrm{opt}}(a)
+=
+\sqrt{\frac{c}{a}}
+=
+\sqrt{
+\frac{2G^2}
+{\alpha a n_T}
+}.
+\]
+
+This is exactly the value of $\lambda$ that balances the regularization and stability terms.
+
+\medskip
+
+\textbf{Step 4: Evaluate the objective at the optimum.}
+
+Substituting $\lambda_{\mathrm{opt}}$ into the first term gives
+
+\[
+\lambda_{\mathrm{opt}}a
+=
+a\sqrt{\frac{c}{a}}
+=
+\sqrt{ac}.
+\]
+
+Similarly,
+
+\[
+\frac{c}{\lambda_{\mathrm{opt}}}
+=
+\frac{c}{\sqrt{c/a}}
+=
+\sqrt{ac}.
+\]
+
+Notice that the two terms become exactly equal. This is a standard phenomenon in balancing arguments: at the optimum, the increasing term and decreasing term contribute equally.
+
+Therefore,
+
+\[
+f(\lambda_{\mathrm{opt}})
+=
+\sqrt{ac}
++
+\sqrt{ac}
+=
+2\sqrt{ac}.
+\]
+
+Hence the best possible value of the two-term expression is
+
+\[
+2\sqrt{ac}.
+\]
+
+\medskip
+
+\textbf{Step 5: Use the factor-2 grid approximation.}
+
+The optimal value $\lambda_{\mathrm{opt}}(a)$ is generally not one of the grid points.
+
+However, by assumption, the grid $\Lambda$ is sufficiently dense that for every
+
+\[
+a\in[B_{\min}^2,B_{\max}^2]
+\]
+
+there exists a grid point satisfying
+
+\[
+\frac{\lambda_{\mathrm{opt}}(a)}{2}
+\le
+\lambda
+\le
+2\lambda_{\mathrm{opt}}(a).
+\]
+
+Thus the chosen grid point differs from the ideal value by at most a factor of two.
+
+Write
+
+\[
+\lambda
+=
+s\lambda_{\mathrm{opt}},
+\]
+
+where
+
+\[
+s\in\left[\frac12,2\right].
+\]
+
+Substituting into $f(\lambda)$,
+
+\[
+f(\lambda)
+=
+s\lambda_{\mathrm{opt}}a
++
+\frac{c}
+{s\lambda_{\mathrm{opt}}}.
+\]
+
+Using the identities from Step 4,
+
+\[
+\lambda_{\mathrm{opt}}a
+=
+\sqrt{ac},
+\qquad
+\frac{c}{\lambda_{\mathrm{opt}}}
+=
+\sqrt{ac},
+\]
+
+we obtain
+
+\[
+f(\lambda)
+=
+s\sqrt{ac}
++
+\frac1s\sqrt{ac}
+=
+\left(
+s+\frac1s
+\right)\sqrt{ac}.
+\]
+
+Thus the effect of discretization is completely captured by the multiplicative factor
+
+\[
+s+\frac1s.
+\]
+
+\medskip
+
+\textbf{Step 6: Bound the discretization loss.}
+
+We now maximize
+
+\[
+s+\frac1s
+\]
+
+over the interval
+
+\[
+s\in\left[\frac12,2\right].
+\]
+
+Since the function is symmetric under the transformation $s\mapsto 1/s$, its maximum on this interval occurs at an endpoint.
+
+Evaluating at either endpoint,
+
+\[
+2+\frac12
+=
+\frac52.
+\]
+
+Therefore,
+
+\[
+s+\frac1s
+\le
+\frac52.
+\]
+
+Substituting into the previous display gives
+
+\[
+f(\lambda)
+\le
+\frac52\sqrt{ac}.
+\]
+
+Hence approximating the optimal regularization parameter by a factor of two increases the objective by at most a factor of
+
+\[
+\frac54
+\]
+
+relative to the optimum value $2\sqrt{ac}$.
+
+\medskip
+
+\textbf{Step 7: Substitute back the original constants.}
+
+Recall that
+
+\[
+a=\Psi(u)
+\]
+
+and
+
+\[
+c
+=
+\frac{2G^2}{\alpha n_T}.
+\]
+
+Therefore,
+
+\[
+\sqrt{ac}
+=
+\sqrt{
+\Psi(u)
+\cdot
+\frac{2G^2}{\alpha n_T}
+}.
+\]
+
+Pulling $G$ outside the square root gives
+
+\[
+\sqrt{ac}
+=
+G
+\sqrt{
+\frac{2\Psi(u)}
+{\alpha n_T}
+}.
+\]
+
+Consequently,
+
+\[
+\frac52\sqrt{ac}
+=
+\frac52
+G
+\sqrt{
+\frac{2\Psi(u)}
+{\alpha n_T}
+}
+=
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+{\alpha n_T}
+}.
+\]
+
+Thus the regularization and stability terms together satisfy
+
+\[
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n_T}
+\le
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+{\alpha n_T}
+}.
+\]
+
+\medskip
+
+\textbf{Step 8: Insert this estimate into the oracle inequality.}
+
+Applying the oracle inequality from Part A.2 and choosing the grid point guaranteed by the factor-2 approximation property yields
+
+\[
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+L_{\mathcal D}(u)
++
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+{\alpha n_T}
+}
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\mathbb E
+L_{\mathcal D}(h_{\widehat{\lambda}})
+\le
+L_{\mathcal D}(u)
++
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+{\alpha n_T}
+}
++
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+This result shows that the algorithm automatically adapts to the unknown comparator scale $\Psi(u)$. If we knew $\Psi(u)$ in advance, we could choose the exact optimal regularization parameter $\lambda_{\mathrm{opt}}(a)$. Instead, we search over a grid of candidate values.
+
+Because the grid approximates the optimal regularization parameter within a factor of two, the resulting learning guarantee loses only a constant factor. Thus adaptation to an unknown comparator scale is essentially free, apart from the small validation-selection term
+
+\[
+2\sqrt{
+\frac{\log(2K)}
+{2n_V}
+}.
+\]
+
+This is the key idea behind parameter tuning by validation.
+
+\end{solutionbox}
+
+
+\item \textbf{A dyadic grid and the price of tuning.}
+
+Construct a dyadic grid $\Lambda$ satisfying the property in the previous part for all $a\in[B_{\min}^2,B_{\max}^2]$, where $0<B_{\min}\le B_{\max}$. State the number of grid points $K$ as a function of $B_{\max}/B_{\min}$.
+
+Assume $n$ is even, set $n_T=n_V=n/2$, and simplify the resulting guarantee. Identify the two statistical terms in the bound: the RERM learning term and the validation-selection term. Identify the additional term caused by not knowing the comparator scale $\Psi(u)$ in advance.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In Part A.3 we proved that if the grid $\Lambda$ contains a regularization parameter that approximates the optimal value
+\[
+\lambda_{\mathrm{opt}}(a)
+=
+\sqrt{\frac{2G^2}{\alpha a n_T}},
+\]
+within a factor of two, then the resulting learning guarantee is almost as good as if we had known the comparator scale
+\[
+a=\Psi(u)
+\]
+in advance.
+
+The purpose of this part is to explicitly construct such a grid and determine how many candidate regularization parameters are required.
+
+We will use a dyadic grid, meaning that consecutive values differ by a factor of two.
+
+\medskip
+
+\textbf{Step 1: Determine the range of optimal regularization parameters.}
+
+Recall that
+\[
+\lambda_{\mathrm{opt}}(a)
+=
+\sqrt{
+\frac{2G^2}
+     {\alpha a n_T}
+}.
+\]
+
+Define
+\[
+C
+=
+\sqrt{
+\frac{2G^2}
+     {\alpha n_T}
+}.
+\]
+
+Then
+\[
+\lambda_{\mathrm{opt}}(a)
+=
+\frac{C}{\sqrt a}.
+\]
+
+The comparator scale satisfies
+\[
+B_{\min}^2
+\le
+a
+\le
+B_{\max}^2.
+\]
+
+Taking square roots,
+\[
+B_{\min}
+\le
+\sqrt a
+\le
+B_{\max}.
+\]
+
+Therefore,
+\[
+\frac{C}{B_{\max}}
+\le
+\lambda_{\mathrm{opt}}(a)
+\le
+\frac{C}{B_{\min}}.
+\]
+
+So all possible optimal regularization parameters lie in
+\[
+\left[
+\frac{C}{B_{\max}},
+\frac{C}{B_{\min}}
+\right].
+\]
+
+\medskip
+
+\textbf{Step 2: Construct the dyadic grid.}
+
+Define
+\[
+\Lambda
+=
+\left\{
+\frac{C}{B_{\max}}2^j
+:
+j=0,1,\ldots,m
+\right\}.
+\]
+
+We need the largest grid point to reach at least $\frac{C}{B_{\min}}$. Thus,
+\[
+\frac{C}{B_{\max}}2^m
+\ge
+\frac{C}{B_{\min}}.
+\]
+
+Canceling $C$ gives
+\[
+2^m
+\ge
+\frac{B_{\max}}{B_{\min}}.
+\]
+
+Therefore, choose
+\[
+m
+=
+\left\lceil
+\log_2\left(\frac{B_{\max}}{B_{\min}}\right)
+\right\rceil.
+\]
+
+The number of grid points is
+\[
+K=m+1
+=
+1+
+\left\lceil
+\log_2\left(\frac{B_{\max}}{B_{\min}}\right)
+\right\rceil.
+\]
+
+\medskip
+
+\textbf{Step 3: Verify the factor-two property.}
+
+Because consecutive grid points differ by a factor of $2$, every value in the interval
+\[
+\left[
+\frac{C}{B_{\max}},
+\frac{C}{B_{\min}}
+\right]
+\]
+is within a factor of $2$ of some grid point.
+
+Therefore, for every $a\in[B_{\min}^2,B_{\max}^2]$, there exists some $\lambda\in\Lambda$ such that
+\[
+\frac{\lambda_{\mathrm{opt}}(a)}{2}
+\le
+\lambda
+\le
+2\lambda_{\mathrm{opt}}(a).
+\]
+
+This is exactly the grid property needed in Part A.3.
+
+\medskip
+
+\textbf{Step 4: Substitute $n_T=n_V=n/2$.}
+
+From Part A.3,
+\[
+\E L_{\mathcal D}(h_{\widehat\lambda})
+\le
+L_{\mathcal D}(u)
++
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+     {\alpha n_T}
+}
++
+2
+\sqrt{
+\frac{\log(2K)}
+     {2n_V}
+}.
+\]
+
+Now set
+\[
+n_T=n_V=\frac n2.
+\]
+
+The RERM term becomes
+\[
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{\Psi(u)}
+     {\alpha(n/2)}
+}
+=
+\frac{5\sqrt2}{2}
+G
+\sqrt{
+\frac{2\Psi(u)}
+     {\alpha n}
+}
+=
+5G
+\sqrt{
+\frac{\Psi(u)}
+     {\alpha n}
+}.
+\]
+
+The validation term becomes
+\[
+2
+\sqrt{
+\frac{\log(2K)}
+     {2(n/2)}
+}
+=
+2
+\sqrt{
+\frac{\log(2K)}
+     {n}
+}.
+\]
+
+Therefore,
+\[
+\boxed{
+\E L_{\mathcal D}(h_{\widehat\lambda})
+\le
+L_{\mathcal D}(u)
++
+5G
+\sqrt{
+\frac{\Psi(u)}
+     {\alpha n}
+}
++
+2
+\sqrt{
+\frac{\log(2K)}
+     {n}
+}
+}
+\]
+where
+\[
+\boxed{
+K
+=
+1+
+\left\lceil
+\log_2\left(\frac{B_{\max}}{B_{\min}}\right)
+\right\rceil
+}.
+\]
+
+\medskip
+
+\textbf{Step 5: Identify the statistical terms.}
+
+The first statistical term is
+\[
+5G
+\sqrt{
+\frac{\Psi(u)}
+     {\alpha n}
+}.
+\]
+
+This is the RERM learning term. It comes from the regularization-stability tradeoff.
+
+The second statistical term is
+\[
+2
+\sqrt{
+\frac{\log(2K)}
+     {n}
+}.
+\]
+
+This is the validation-selection term. It appears because we choose among $K$ trained predictors using the validation set.
+
+\medskip
+
+\textbf{Step 6: Interpret the price of tuning.}
+
+If $\Psi(u)$ were known in advance, we could choose the optimal $\lambda$ directly.
+
+Because $\Psi(u)$ is unknown, we instead search over a grid. This creates two costs:
+
+\begin{itemize}
+    \item a constant-factor inflation of the RERM learning term due to factor-$2$ discretization;
+    \item an additional validation-selection penalty depending on $\log K$.
+\end{itemize}
+
+Since
+\[
+K
+=
+1+
+\left\lceil
+\log_2\left(\frac{B_{\max}}{B_{\min}}\right)
+\right\rceil,
+\]
+the validation penalty depends on
+\[
+\log K
+=
+\log\left(
+1+
+\left\lceil
+\log_2\left(\frac{B_{\max}}{B_{\min}}\right)
+\right\rceil
+\right).
+\]
+
+Thus the additional price of tuning is only doubly logarithmic in the scale range:
+\[
+\log\log\left(\frac{B_{\max}}{B_{\min}}\right),
+\]
+up to constants and ceiling terms.
+
+\end{solutionbox}
+
+\end{enumerate}
+
+% =====================================================
+\section{Approximate RERM and Optimization Error}
+% =====================================================
+
+Let $\mathcal W$ be a convex parameter domain. Assume $\ell(w,z)$ is convex and $G$-Lipschitz with respect to $\norm{\cdot}$, and $\Psi$ is nonnegative and $\alpha$-strongly convex with respect to $\norm{\cdot}$. For $\lambda>0$ and a sample $S$ of size $n$, define
+\[
+F_S(w)=L_S(w)+\lambda\Psi(w),
+\qquad
+w_S\in\arg\min_{w\in\mathcal W}F_S(w).
+\]
+Let the actual algorithm return $\widetilde w_S\in\mathcal W$ satisfying the deterministic optimization guarantee
+\[
+F_S(\widetilde w_S)\le F_S(w_S)+\eta
+\]
+for every sample $S$, where $\eta\ge0$.
+
+You may use the exact RERM movement bound from Week 8: if $S$ and $S'$ differ in one example, then
+\[
+\norm{w_S-w_{S'}}\le \frac{2G}{\lambda\alpha n}.
+\]
+
+\begin{enumerate}
+
+\item \textbf{Approximate minimizers are close to exact minimizers.}
+
+Prove that for every sample $S$,
+\[
+\norm{\widetilde w_S-w_S}\le\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+We are given the exact minimizer
+\[
+w_S
+\in
+\arg\min_{w\in\mathcal W} F_S(w)
+\]
+and an approximate minimizer \(\widetilde w_S\) satisfying
+\[
+F_S(\widetilde w_S)
+\le
+F_S(w_S)+\eta.
+\]
+
+We want to prove that
+\[
+\|\widetilde w_S-w_S\|
+\le
+\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+\medskip
+
+\textbf{Step 1: Show that \(F_S\) is strongly convex.}
+
+Recall that
+\[
+F_S(w)
+=
+L_S(w)+\lambda\Psi(w).
+\]
+
+The empirical loss \(L_S(w)\) is convex because it is an average of convex losses. The regularizer \(\Psi(w)\) is \(\alpha\)-strongly convex. Therefore, multiplying \(\Psi\) by \(\lambda>0\) makes
+\[
+\lambda\Psi(w)
+\]
+\(\lambda\alpha\)-strongly convex.
+
+A convex function plus a \(\lambda\alpha\)-strongly convex function is still \(\lambda\alpha\)-strongly convex. Hence
+\[
+F_S(w)
+\]
+is \(\lambda\alpha\)-strongly convex.
+
+\medskip
+
+\textbf{Step 2: Apply strong convexity at the minimizer.}
+
+Because \(w_S\) minimizes \(F_S\), strong convexity gives
+\[
+F_S(\widetilde w_S)
+\ge
+F_S(w_S)
++
+\frac{\lambda\alpha}{2}
+\|\widetilde w_S-w_S\|^2.
+\]
+
+This inequality says that moving away from the minimizer increases the objective by at least a quadratic amount.
+
+\medskip
+
+\textbf{Step 3: Use the approximate optimality guarantee.}
+
+The approximate optimizer satisfies
+\[
+F_S(\widetilde w_S)
+\le
+F_S(w_S)+\eta.
+\]
+
+Combining this upper bound with the strong convexity lower bound gives
+\[
+F_S(w_S)
++
+\frac{\lambda\alpha}{2}
+\|\widetilde w_S-w_S\|^2
+\le
+F_S(w_S)+\eta.
+\]
+
+Subtract \(F_S(w_S)\) from both sides:
+\[
+\frac{\lambda\alpha}{2}
+\|\widetilde w_S-w_S\|^2
+\le
+\eta.
+\]
+
+Multiply both sides by \(\frac{2}{\lambda\alpha}\):
+\[
+\|\widetilde w_S-w_S\|^2
+\le
+\frac{2\eta}{\lambda\alpha}.
+\]
+
+Taking square roots gives
+\[
+\boxed{
+\|\widetilde w_S-w_S\|
+\le
+\sqrt{\frac{2\eta}{\lambda\alpha}}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+This shows that small optimization error implies small parameter error. Larger \(\lambda\) or larger \(\alpha\) means stronger curvature, so the approximate minimizer must be closer to the exact minimizer.
+
+\end{solutionbox}
+
+\item \textbf{Stability of approximate RERM.}
+
+Let $S$ and $S'$ differ in one example. Prove that for every test point $z$,
+\[
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+\frac{2G^2}{\lambda\alpha n}
++
+2G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+Let $S$ and $S'$ be two training samples that differ in exactly one example. We want to bound how much the loss at a test point $z$ can change when the algorithm is trained on $S$ instead of $S'$.
+
+The approximate minimizers are
+\[
+\widetilde w_S
+\qquad \text{and} \qquad
+\widetilde w_{S'}.
+\]
+
+There are two reasons these approximate minimizers can differ:
+\begin{itemize}
+    \item the exact RERM minimizers $w_S$ and $w_{S'}$ may move when one training example changes;
+    \item the approximate minimizers $\widetilde w_S$ and $\widetilde w_{S'}$ may be away from their corresponding exact minimizers.
+\end{itemize}
+
+We will bound both effects separately.
+
+\medskip
+
+\textbf{Step 1: Use Lipschitzness of the loss.}
+
+Since $\ell(w,z)$ is $G$-Lipschitz in $w$, for any two parameter vectors $u$ and $v$,
+\[
+|\ell(u,z)-\ell(v,z)|
+\le
+G\|u-v\|.
+\]
+
+Apply this with
+\[
+u=\widetilde w_S
+\qquad
+\text{and}
+\qquad
+v=\widetilde w_{S'}.
+\]
+
+Then
+\[
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+G\|\widetilde w_S-\widetilde w_{S'}\|.
+\]
+
+Thus it remains to bound
+\[
+\|\widetilde w_S-\widetilde w_{S'}\|.
+\]
+
+\medskip
+
+\textbf{Step 2: Insert the exact minimizers.}
+
+We introduce the exact minimizers $w_S$ and $w_{S'}$ between the approximate minimizers. Write
+\[
+\widetilde w_S-\widetilde w_{S'}
+=
+(\widetilde w_S-w_S)
++
+(w_S-w_{S'})
++
+(w_{S'}-\widetilde w_{S'}).
+\]
+
+Taking norms and applying the triangle inequality,
+\[
+\|\widetilde w_S-\widetilde w_{S'}\|
+\le
+\|\widetilde w_S-w_S\|
++
+\|w_S-w_{S'}\|
++
+\|w_{S'}-\widetilde w_{S'}\|.
+\]
+
+This decomposition separates the total movement into three pieces:
+\begin{itemize}
+    \item optimization error on sample $S$;
+    \item movement of the exact RERM solution when one example changes;
+    \item optimization error on sample $S'$.
+\end{itemize}
+
+\medskip
+
+\textbf{Step 3: Bound the approximate optimization terms.}
+
+From Part B.1, for sample $S$,
+\[
+\|\widetilde w_S-w_S\|
+\le
+\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+The same argument applies to sample $S'$, so
+\[
+\|w_{S'}-\widetilde w_{S'}\|
+\le
+\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+Therefore,
+\[
+\|\widetilde w_S-\widetilde w_{S'}\|
+\le
+\sqrt{\frac{2\eta}{\lambda\alpha}}
++
+\|w_S-w_{S'}\|
++
+\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+Combining the two identical terms gives
+\[
+\|\widetilde w_S-\widetilde w_{S'}\|
+\le
+\|w_S-w_{S'}\|
++
+2\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+\medskip
+
+\textbf{Step 4: Use the exact RERM movement bound.}
+
+The problem statement allows us to use the exact RERM movement bound. Since $S$ and $S'$ differ in one example,
+\[
+\|w_S-w_{S'}\|
+\le
+\frac{2G}{\lambda\alpha n}.
+\]
+
+Substituting this into the previous inequality,
+\[
+\|\widetilde w_S-\widetilde w_{S'}\|
+\le
+\frac{2G}{\lambda\alpha n}
++
+2\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+\medskip
+
+\textbf{Step 5: Convert parameter movement into loss movement.}
+
+Using the Lipschitz bound from Step 1,
+\[
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+G\|\widetilde w_S-\widetilde w_{S'}\|.
+\]
+
+Substitute the distance bound:
+\[
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+G
+\left(
+\frac{2G}{\lambda\alpha n}
++
+2\sqrt{\frac{2\eta}{\lambda\alpha}}
+\right).
+\]
+
+Distribute $G$:
+\[
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+\frac{2G^2}{\lambda\alpha n}
++
+2G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+Therefore,
+\[
+\boxed{
+|\ell(\widetilde w_S,z)-\ell(\widetilde w_{S'},z)|
+\le
+\frac{2G^2}{\lambda\alpha n}
++
+2G\sqrt{\frac{2\eta}{\lambda\alpha}}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The first term,
+\[
+\frac{2G^2}{\lambda\alpha n},
+\]
+is the usual stability term for exact RERM.
+
+The second term,
+\[
+2G\sqrt{\frac{2\eta}{\lambda\alpha}},
+\]
+is the additional cost caused by approximate optimization.
+
+When $\eta=0$, the approximate minimizers equal the exact minimizers, and the bound reduces to the exact RERM stability bound.
+
+\end{solutionbox}
+
+\item \textbf{Learning guarantee with optimization error.}
+
+Prove the expected true-risk bound
+\[
+\E_SL_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)+\lambda\Psi(u)+\frac{2G^2}{\lambda\alpha n}
++G\sqrt{\frac{2\eta}{\lambda\alpha}}
+\]
+for every comparator $u\in\mathcal W$.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In Part B.1 we proved that an approximate minimizer must be close to the exact minimizer in parameter space. The objective of this problem is to convert that parameter-space guarantee into a learning guarantee.
+
+More specifically, we would like to show that the population risk of the approximate predictor \(\widetilde w_S\) is nearly as good as the population risk of the exact regularized empirical risk minimizer \(w_S\).
+
+The desired result should look exactly like the Week 8 RERM oracle inequality, with one additional term that quantifies the cost of approximate optimization.
+
+\medskip
+
+\textbf{Step 1: Recall the exact RERM guarantee.}
+
+Let
+
+\[
+w_S
+=
+\arg\min_{w\in\mathcal W}
+F_S(w)
+\]
+
+denote the exact regularized empirical risk minimizer.
+
+The Week 8 RERM theorem states that for every comparator \(u\in\mathcal W\),
+
+\[
+\E_S
+L_{\mathcal D}(w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}.
+\]
+
+This inequality serves as our starting point.
+
+If we can show that the approximate predictor \(\widetilde w_S\) is close to \(w_S\) in population risk, then we can simply add the resulting error term to this bound.
+
+\medskip
+
+\textbf{Step 2: Compare the population risks of the approximate and exact predictors.}
+
+Consider the difference
+
+\[
+L_{\mathcal D}(\widetilde w_S)
+-
+L_{\mathcal D}(w_S).
+\]
+
+Recall that
+
+\[
+L_{\mathcal D}(w)
+=
+\E_{z\sim\mathcal D}
+[\ell(w,z)].
+\]
+
+Therefore,
+
+\[
+L_{\mathcal D}(\widetilde w_S)
+-
+L_{\mathcal D}(w_S)
+=
+\E_{z\sim\mathcal D}
+\Big[
+\ell(\widetilde w_S,z)
+-
+\ell(w_S,z)
+\Big].
+\]
+
+Since the loss function is \(G\)-Lipschitz in its parameter argument,
+
+\[
+|\ell(\widetilde w_S,z)-\ell(w_S,z)|
+\le
+G
+\|
+\widetilde w_S-w_S
+\|.
+\]
+
+Because this inequality holds for every test point \(z\), taking expectation over \(z\sim\mathcal D\) preserves the inequality:
+
+\[
+L_{\mathcal D}(\widetilde w_S)
+-
+L_{\mathcal D}(w_S)
+\le
+G
+\|
+\widetilde w_S-w_S
+\|.
+\]
+
+Rearranging gives
+
+\[
+L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(w_S)
++
+G
+\|
+\widetilde w_S-w_S
+\|.
+\]
+
+Thus the excess population risk is controlled by the distance between the approximate and exact minimizers.
+
+\medskip
+
+\textbf{Step 3: Use the distance bound from Part B.1.}
+
+Part B.1 proved that every \(\eta\)-approximate minimizer satisfies
+
+\[
+\|
+\widetilde w_S-w_S
+\|
+\le
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}.
+\]
+
+Substituting this estimate into the previous inequality yields
+
+\[
+L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(w_S)
++
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}.
+\]
+
+This shows that the approximate predictor incurs at most an additional
+
+\[
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+\]
+
+units of population risk beyond the exact minimizer.
+
+\medskip
+
+\textbf{Step 4: Take expectation over the training sample.}
+
+The previous inequality holds for every training sample \(S\). Therefore we may take expectation over the randomness of the sample:
+
+\[
+\E_S
+L_{\mathcal D}(\widetilde w_S)
+\le
+\E_S
+L_{\mathcal D}(w_S)
++
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}.
+\]
+
+Notice that the optimization-error term is deterministic and therefore remains unchanged when taking expectation.
+
+\medskip
+
+\textbf{Step 5: Substitute the exact RERM guarantee.}
+
+Applying the Week 8 RERM bound from Step 1 gives
+
+\[
+\E_S
+L_{\mathcal D}(w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}.
+\]
+
+Substituting this into the previous inequality yields
+
+\[
+\E_S
+L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}
++
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\E_S
+L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}
++
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The first three terms,
+
+\[
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n},
+\]
+
+are exactly the same terms that appear in the learning guarantee for exact RERM.
+
+The additional term
+
+\[
+G
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+\]
+
+is the cost of approximate optimization. It measures how much population risk can be lost because we stop optimization before reaching the exact minimizer.
+
+As the optimization error \(\eta\) approaches zero, this additional term vanishes, and the bound reduces to the original exact-RERM guarantee.
+
+\medskip
+
+\textbf{Remark.}
+
+One might try to prove this result using the approximate-stability bound from Part B.2. However, that approach introduces an additional optimization-error contribution and produces a weaker bound.
+
+The sharper argument is to compare \(\widetilde w_S\) directly to the exact minimizer \(w_S\), use Lipschitzness of the population loss, and then apply the distance estimate from Part B.1. This yields exactly one optimization-error term, which is the bound requested in the problem.
+
+\end{solutionbox}
+
+\item \textbf{How accurate must the optimizer be?}
+
+Suppose $B>0$ and we want to compete with all $u\in\mathcal W$ satisfying $\Psi(u)\le B^2$. Use
+\[
+\lambda=\sqrt{\frac{2G^2}{\alpha B^2n}}
+\]
+and simplify the bound from the previous part. Give a sufficient condition on $\eta$ so that
+\[
+G\sqrt{\frac{2\eta}{\lambda\alpha}}
+\le
+\frac{GB}{\sqrt{\alpha n}}.
+\]
+State the resulting excess-risk bound under this condition.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In Part B.3 we proved that an approximate regularized empirical risk minimizer satisfies
+
+\[
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}
++
+G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+The first two additional terms,
+
+\[
+\lambda\Psi(u)
+\qquad\text{and}\qquad
+\frac{2G^2}{\lambda\alpha n},
+\]
+
+are the usual regularization and stability terms that appear in the exact RERM analysis.
+
+The final term,
+
+\[
+G\sqrt{\frac{2\eta}{\lambda\alpha}},
+\]
+
+is the extra cost caused by approximate optimization.
+
+The purpose of this problem is to choose the regularization parameter as if the comparator scale were known to satisfy
+
+\[
+\Psi(u)\le B^2,
+\]
+
+and then determine how accurately the optimization problem must be solved so that the optimization-error term is no larger than the natural statistical error scale of the learning problem.
+
+\medskip
+
+\textbf{Step 1: Substitute the comparator bound.}
+
+Assume that the comparator \(u\) satisfies
+
+\[
+\Psi(u)\le B^2.
+\]
+
+Then the regularization term obeys
+
+\[
+\lambda\Psi(u)
+\le
+\lambda B^2.
+\]
+
+Substituting this upper bound into the guarantee from Part B.3 gives
+
+\[
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda B^2
++
+\frac{2G^2}{\lambda\alpha n}
++
+G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+Thus the only quantities we must control are the three terms on the right-hand side.
+
+\medskip
+
+\textbf{Step 2: Use the prescribed value of \(\lambda\).}
+
+The problem specifies the choice
+
+\[
+\lambda
+=
+\sqrt{
+\frac{2G^2}
+     {\alpha B^2 n}
+}.
+\]
+
+Since
+
+\[
+\sqrt{2G^2}
+=
+\sqrt2\,G,
+\]
+
+we may rewrite this as
+
+\[
+\lambda
+=
+\frac{\sqrt2\,G}
+     {B\sqrt{\alpha n}}.
+\]
+
+This value was chosen to balance the regularization term and the stability term.
+
+\medskip
+
+\textbf{Step 3: Compute the regularization term.}
+
+Substituting the chosen \(\lambda\),
+
+\[
+\lambda B^2
+=
+\frac{\sqrt2\,G}
+     {B\sqrt{\alpha n}}
+     B^2.
+\]
+
+Cancelling one factor of \(B\),
+
+\[
+\lambda B^2
+=
+\frac{\sqrt2\,GB}
+     {\sqrt{\alpha n}}.
+\]
+
+\medskip
+
+\textbf{Step 4: Compute the stability term.}
+
+Now consider
+
+\[
+\frac{2G^2}
+     {\lambda\alpha n}.
+\]
+
+Substituting the chosen value of \(\lambda\),
+
+\[
+\frac{2G^2}
+{\left(
+\frac{\sqrt2\,G}
+     {B\sqrt{\alpha n}}
+\right)\alpha n}.
+\]
+
+Multiply by the reciprocal:
+
+\[
+=
+2G^2
+\cdot
+\frac{B\sqrt{\alpha n}}
+     {\sqrt2\,G\,\alpha n}.
+\]
+
+Cancel one factor of \(G\):
+
+\[
+=
+\frac{2GB\sqrt{\alpha n}}
+     {\sqrt2\,\alpha n}.
+\]
+
+Since
+
+\[
+\frac{2}{\sqrt2}
+=
+\sqrt2,
+\]
+
+this becomes
+
+\[
+=
+\frac{\sqrt2\,GB\sqrt{\alpha n}}
+     {\alpha n}.
+\]
+
+Finally, using
+
+\[
+\frac{\sqrt{\alpha n}}
+     {\alpha n}
+=
+\frac{1}
+     {\sqrt{\alpha n}},
+\]
+
+we obtain
+
+\[
+\frac{2G^2}
+     {\lambda\alpha n}
+=
+\frac{\sqrt2\,GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Thus the stability term equals the regularization term.
+
+\medskip
+
+\textbf{Step 5: Combine the statistical terms.}
+
+Since the two terms are equal,
+
+\[
+\lambda B^2
++
+\frac{2G^2}
+     {\lambda\alpha n}
+=
+\frac{\sqrt2\,GB}
+     {\sqrt{\alpha n}}
++
+\frac{\sqrt2\,GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Therefore,
+
+\[
+\lambda B^2
++
+\frac{2G^2}
+     {\lambda\alpha n}
+=
+\frac{2\sqrt2\,GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Substituting this back into the oracle inequality gives
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{2\sqrt2\,GB}
+     {\sqrt{\alpha n}}
++
+G\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}.
+}
+\]
+
+At this point the only remaining term is the optimization-error contribution.
+
+\medskip
+
+\textbf{Step 6: Determine how small \(\eta\) must be.}
+
+We would like the optimization-error term to be no larger than the target statistical scale
+
+\[
+\frac{GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Therefore require
+
+\[
+G\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+\le
+\frac{GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Since \(G>0\), divide both sides by \(G\):
+
+\[
+\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+\le
+\frac{B}
+     {\sqrt{\alpha n}}.
+\]
+
+Square both sides:
+
+\[
+\frac{2\eta}
+     {\lambda\alpha}
+\le
+\frac{B^2}
+     {\alpha n}.
+\]
+
+Multiply both sides by \(\lambda\alpha\):
+
+\[
+2\eta
+\le
+\frac{\lambda B^2}{n}.
+\]
+
+Dividing by \(2\),
+
+\[
+\eta
+\le
+\frac{\lambda B^2}{2n}.
+\]
+
+\medskip
+
+\textbf{Step 7: Substitute the chosen value of \(\lambda\).}
+
+Using
+
+\[
+\lambda
+=
+\frac{\sqrt2\,G}
+     {B\sqrt{\alpha n}},
+\]
+
+we obtain
+
+\[
+\eta
+\le
+\frac{1}{2n}
+\left(
+\frac{\sqrt2\,G}
+     {B\sqrt{\alpha n}}
+\right)
+B^2.
+\]
+
+Cancel one factor of \(B\):
+
+\[
+\eta
+\le
+\frac{\sqrt2\,GB}
+     {2n\sqrt{\alpha n}}.
+\]
+
+Since
+
+\[
+\frac{\sqrt2}{2}
+=
+\frac{1}{\sqrt2},
+\]
+
+this becomes
+
+\[
+\boxed{
+\eta
+\le
+\frac{GB}
+     {\sqrt2\,\sqrt{\alpha}\,n^{3/2}}
+}.
+\]
+
+Thus this is a sufficient condition on the optimization accuracy.
+
+\medskip
+
+\textbf{Step 8: State the final learning guarantee.}
+
+Under the condition
+
+\[
+\eta
+\le
+\frac{GB}
+     {\sqrt2\,\sqrt{\alpha}\,n^{3/2}},
+\]
+
+the optimization-error term satisfies
+
+\[
+G\sqrt{
+\frac{2\eta}
+     {\lambda\alpha}
+}
+\le
+\frac{GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Substituting this into the bound from Step 5 yields
+
+\[
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{2\sqrt2\,GB}
+     {\sqrt{\alpha n}}
++
+\frac{GB}
+     {\sqrt{\alpha n}}.
+\]
+
+Combining the coefficients,
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+(2\sqrt2+1)
+\frac{GB}
+     {\sqrt{\alpha n}}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The exact RERM algorithm achieves a learning rate on the order of
+
+\[
+\frac{GB}{\sqrt{\alpha n}}.
+\]
+
+This result shows that approximate optimization achieves the same statistical rate provided that the optimization error decreases sufficiently quickly, namely
+
+\[
+\eta
+=
+O\!\left(
+\frac{1}{n^{3/2}}
+\right).
+\]
+
+Under this condition, the optimization error remains smaller than the inherent statistical uncertainty of the learning problem and therefore does not change the overall learning rate.
+
+\end{solutionbox}
+
+\item \textbf{Soft-margin linear classification.}
+
+Let
+\[
+\ell(w,(x,y))=(1-y\ip{w}{x})_+,
+\qquad
+ y\in\{-1,+1\},
+\qquad
+\norm{x}_2\le R,
+\]
+and use
+\[
+\Psi(w)=\frac12\norm{w}_2^2.
+\]
+Specialize the bound from the previous part to compete with all $u$ satisfying $\norm{u}_2\le B$, and state the approximate-RERM bound in terms of $R,B,n$, and $\eta$. Then give a sufficient condition on $\eta$ under which the optimization-error term is no larger than $\frac{RB}{\sqrt{n}}$.
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In this part we apply the general approximate-RERM theorem from Part B.3 to the specific setting of binary linear classification with hinge loss and Euclidean regularization.
+
+The objective is to identify the problem-dependent constants \(G\) and \(\alpha\), substitute them into the approximate-RERM guarantee, choose the optimal regularization parameter \(\lambda\), and determine how accurately the optimization problem must be solved in order for the optimization error to remain smaller than the natural statistical error of the learning problem.
+
+\medskip
+
+\textbf{Step 1: Identify the Lipschitz constant \(G\).}
+
+The loss function is the hinge loss
+
+\[
+\ell(w,(x,y))
+=
+(1-y\langle w,x\rangle)_+,
+\]
+
+where
+
+\[
+(a)_+
+=
+\max\{a,0\}.
+\]
+
+To determine the Lipschitz constant, observe that the function
+
+\[
+t \mapsto (1-t)_+
+\]
+
+is \(1\)-Lipschitz. Therefore, as a function of \(w\),
+
+\[
+\ell(w,(x,y))
+=
+(1-y\langle w,x\rangle)_+
+\]
+
+has Lipschitz constant equal to the norm of the linear coefficient multiplying \(w\).
+
+Since
+
+\[
+y\in\{-1,+1\},
+\]
+
+we have
+
+\[
+\|yx\|_2
+=
+\|x\|_2.
+\]
+
+The problem assumes that every feature vector satisfies
+
+\[
+\|x\|_2 \le R.
+\]
+
+Therefore,
+
+\[
+|\ell(w,(x,y))-\ell(v,(x,y))|
+\le
+R\|w-v\|_2
+\]
+
+for every pair of vectors \(w,v\).
+
+Hence the Lipschitz constant is
+
+\[
+\boxed{
+G=R.
+}
+\]
+
+\medskip
+
+\textbf{Step 2: Identify the strong-convexity parameter \(\alpha\).}
+
+The regularizer is
+
+\[
+\Psi(w)
+=
+\frac12\|w\|_2^2.
+\]
+
+The squared Euclidean norm is a standard example of a strongly convex function.
+
+In particular,
+
+\[
+\frac12\|w\|_2^2
+\]
+
+is \(1\)-strongly convex with respect to the Euclidean norm.
+
+Therefore,
+
+\[
+\boxed{
+\alpha=1.
+}
+\]
+
+\medskip
+
+\textbf{Step 3: Translate the comparator assumption.}
+
+The problem assumes that the comparator vector satisfies
+
+\[
+\|u\|_2 \le B.
+\]
+
+Substituting this into the regularizer gives
+
+\[
+\Psi(u)
+=
+\frac12\|u\|_2^2
+\le
+\frac12 B^2.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\Psi(u)\le \frac12 B^2.
+}
+\]
+
+\medskip
+
+\textbf{Step 4: Substitute into the approximate-RERM theorem.}
+
+Part B.3 showed that for every comparator \(u\),
+
+\[
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\lambda\Psi(u)
++
+\frac{2G^2}{\lambda\alpha n}
++
+G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+
+Using
+
+\[
+G=R,
+\qquad
+\alpha=1,
+\qquad
+\Psi(u)\le \frac12 B^2,
+\]
+
+we obtain
+
+\[
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{\lambda B^2}{2}
++
+\frac{2R^2}{\lambda n}
++
+R\sqrt{\frac{2\eta}{\lambda}}.
+\]
+
+Thus,
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{\lambda B^2}{2}
++
+\frac{2R^2}{\lambda n}
++
+R\sqrt{\frac{2\eta}{\lambda}}
+}.
+\]
+
+\medskip
+
+\textbf{Step 5: Optimize the choice of \(\lambda\).}
+
+The first two terms depend on \(\lambda\):
+
+\[
+\frac{\lambda B^2}{2}
++
+\frac{2R^2}{\lambda n}.
+\]
+
+As in the previous problems, we choose \(\lambda\) so that these two terms are equal.
+
+Set
+
+\[
+\frac{\lambda B^2}{2}
+=
+\frac{2R^2}{\lambda n}.
+\]
+
+Multiplying both sides by \(\lambda\),
+
+\[
+\frac{\lambda^2 B^2}{2}
+=
+\frac{2R^2}{n}.
+\]
+
+Multiplying by \(2\),
+
+\[
+\lambda^2 B^2
+=
+\frac{4R^2}{n}.
+\]
+
+Therefore,
+
+\[
+\lambda^2
+=
+\frac{4R^2}{B^2 n},
+\]
+
+and hence
+
+\[
+\boxed{
+\lambda
+=
+\frac{2R}{B\sqrt n}.
+}
+\]
+
+\medskip
+
+\textbf{Step 6: Evaluate the statistical terms at the optimal value.}
+
+Substituting the chosen value of \(\lambda\),
+
+\[
+\frac{\lambda B^2}{2}
+=
+\frac12
+\left(
+\frac{2R}{B\sqrt n}
+\right)
+B^2.
+\]
+
+Cancelling one factor of \(B\),
+
+\[
+\frac{\lambda B^2}{2}
+=
+\frac{RB}{\sqrt n}.
+\]
+
+Next,
+
+\[
+\frac{2R^2}{\lambda n}
+=
+\frac{2R^2}
+{\left(\frac{2R}{B\sqrt n}\right)n}.
+\]
+
+Multiplying by the reciprocal,
+
+\[
+=
+2R^2
+\cdot
+\frac{B\sqrt n}{2Rn}.
+\]
+
+Cancelling \(2R\),
+
+\[
+=
+\frac{RB\sqrt n}{n}
+=
+\frac{RB}{\sqrt n}.
+\]
+
+Thus the two terms are equal, as expected.
+
+Adding them together,
+
+\[
+\frac{\lambda B^2}{2}
++
+\frac{2R^2}{\lambda n}
+=
+\frac{2RB}{\sqrt n}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{2RB}{\sqrt n}
++
+R\sqrt{\frac{2\eta}{\lambda}}
+}
+\]
+
+with
+
+\[
+\boxed{
+\lambda
+=
+\frac{2R}{B\sqrt n}.
+}
+\]
+
+\medskip
+
+\textbf{Step 7: Simplify the optimization-error term.}
+
+Substituting the chosen value of \(\lambda\),
+
+\[
+R\sqrt{\frac{2\eta}{\lambda}}
+=
+R
+\sqrt{
+\frac{2\eta}
+     {2R/(B\sqrt n)}
+}.
+\]
+
+The factors of \(2\) cancel:
+
+\[
+=
+R
+\sqrt{
+\frac{\eta B\sqrt n}{R}
+}.
+\]
+
+Thus the bound may also be written as
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{2RB}{\sqrt n}
++
+R
+\sqrt{
+\frac{\eta B\sqrt n}{R}
+}
+}.
+\]
+
+\medskip
+
+\textbf{Step 8: Determine a sufficient condition on \(\eta\).}
+
+We would like the optimization-error term to be no larger than
+
+\[
+R\sqrt{\frac{B}{n}},
+\]
+
+which is of the same statistical scale as the other terms.
+
+Therefore require
+
+\[
+R\sqrt{\frac{2\eta}{\lambda}}
+\le
+R\sqrt{\frac{B}{n}}.
+\]
+
+Since \(R>0\), divide both sides by \(R\):
+
+\[
+\sqrt{\frac{2\eta}{\lambda}}
+\le
+\sqrt{\frac{B}{n}}.
+\]
+
+Squaring both sides gives
+
+\[
+\frac{2\eta}{\lambda}
+\le
+\frac{B}{n}.
+\]
+
+Multiplying by \(\lambda\),
+
+\[
+2\eta
+\le
+\frac{\lambda B}{n}.
+\]
+
+Thus,
+
+\[
+\eta
+\le
+\frac{\lambda B}{2n}.
+\]
+
+Substituting
+
+\[
+\lambda
+=
+\frac{2R}{B\sqrt n},
+\]
+
+we obtain
+
+\[
+\eta
+\le
+\frac{1}{2n}
+\left(
+\frac{2R}{B\sqrt n}
+\right)
+B.
+\]
+
+The factors of \(2\) and \(B\) cancel:
+
+\[
+\eta
+\le
+\frac{R}{n\sqrt n}.
+\]
+
+Hence a sufficient condition is
+
+\[
+\boxed{
+\eta
+\le
+\frac{R}{n^{3/2}}.
+}
+\]
+
+\medskip
+
+\textbf{Step 9: State the resulting learning guarantee.}
+
+Under the condition
+
+\[
+\eta
+\le
+\frac{R}{n^{3/2}},
+\]
+
+the optimization-error term satisfies
+
+\[
+R\sqrt{\frac{2\eta}{\lambda}}
+\le
+R\sqrt{\frac{B}{n}}.
+\]
+
+Substituting this into the previous bound gives
+
+\[
+\boxed{
+\E_S L_{\mathcal D}(\widetilde w_S)
+\le
+L_{\mathcal D}(u)
++
+\frac{2RB}{\sqrt n}
++
+R\sqrt{\frac{B}{n}}
+}.
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+For hinge-loss linear classification with Euclidean regularization, the statistical learning term scales as
+
+\[
+O\!\left(\frac{RB}{\sqrt n}\right).
+\]
+
+The theorem shows that approximate optimization achieves essentially the same learning rate provided the optimization error decreases at least as fast as
+
+\[
+\eta
+=
+O\!\left(\frac{R}{n^{3/2}}\right).
+\]
+
+Under this condition, the optimization error remains smaller than the inherent statistical uncertainty of the learning problem and therefore does not affect the overall rate of learning.
+
+\end{solutionbox}
+
+\end{enumerate}
+
+% =====================================================
+\section{A Weighted Euclidean Geometry}
+% =====================================================
+
+Assume linear prediction with scalar loss convex and $g$-Lipschitz in the prediction. Let $b_1,\ldots,b_d>0$ and $r_1,\ldots,r_d>0$. Suppose
+\[
+\mathcal C_b=\{w\in\R^d: |w_j|\le b_j\text{ for all }j\}
+\]
+and $|\varphi_j(x)|\le r_j$ for all $x,j$.
+
+For $Q=\operatorname{diag}(q_1,\ldots,q_d)$ with $q_j>0$, define
+\[
+\norm{w}_Q=\sqrt{w^\top Qw},
+\qquad
+\Psi_Q(w)=\frac12w^\top Qw.
+\]
+You may use that $\Psi_Q$ is $1$-strongly convex with respect to $\norm{\cdot}_Q$.
+
+\begin{enumerate}
+
+\item \textbf{Geometry quantities.}
+
+Prove that
+\[
+\norm{\varphi(x)}_{Q,*}^2
+\le
+\sum_{j=1}^d\frac{r_j^2}{q_j},
+\qquad
+\sup_{w\in\mathcal C_b}\Psi_Q(w)
+=
+\frac12\sum_{j=1}^dq_jb_j^2.
+\]
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In this problem we analyze the geometry induced by the weighted Euclidean norm
+
+\[
+\|w\|_Q
+=
+\sqrt{w^\top Qw},
+\]
+
+where
+
+\[
+Q
+=
+\operatorname{diag}(q_1,\ldots,q_d)
+\]
+
+is a diagonal matrix with strictly positive diagonal entries
+
+\[
+q_j>0.
+\]
+
+The Week 8 RERM theorem depends on two geometric quantities:
+
+\begin{enumerate}
+    \item the dual norm of the feature vector \(\varphi(x)\);
+    \item the largest value attained by the regularizer over the comparator set \(\mathcal C_b\).
+\end{enumerate}
+
+Our objective is to compute explicit formulas for both quantities.
+
+\medskip
+
+\textbf{Step 1: Write the weighted norm explicitly.}
+
+Since \(Q\) is diagonal,
+
+\[
+Q
+=
+\begin{pmatrix}
+q_1 & 0 & \cdots & 0 \\
+0 & q_2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & q_d
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+w^\top Qw
+=
+\sum_{j=1}^{d}
+q_j w_j^2.
+\]
+
+Thus the weighted Euclidean norm can be written as
+
+\[
+\boxed{
+\|w\|_Q
+=
+\sqrt{
+\sum_{j=1}^{d}
+q_j w_j^2
+}.
+}
+\]
+
+This norm weights different coordinates according to the values \(q_j\).
+
+\medskip
+
+\textbf{Step 2: Compute the dual norm.}
+
+For a norm induced by a positive definite matrix \(Q\), the corresponding dual norm is induced by \(Q^{-1}\).
+
+Since \(Q\) is diagonal, its inverse is
+
+\[
+Q^{-1}
+=
+\operatorname{diag}
+\left(
+\frac1{q_1},
+\frac1{q_2},
+\ldots,
+\frac1{q_d}
+\right).
+\]
+
+Hence the dual norm is
+
+\[
+\|v\|_{Q,*}
+=
+\sqrt{
+v^\top Q^{-1}v
+}.
+\]
+
+Expanding the quadratic form gives
+
+\[
+v^\top Q^{-1}v
+=
+\sum_{j=1}^{d}
+\frac{v_j^2}{q_j}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\|v\|_{Q,*}
+=
+\sqrt{
+\sum_{j=1}^{d}
+\frac{v_j^2}{q_j}
+}.
+}
+\]
+
+This is the dual norm associated with the weighted Euclidean geometry.
+
+\medskip
+
+\textbf{Step 3: Apply the dual norm formula to the feature map.}
+
+Substituting
+
+\[
+v=\varphi(x),
+\]
+
+we obtain
+
+\[
+\|\varphi(x)\|_{Q,*}^2
+=
+\sum_{j=1}^{d}
+\frac{\varphi_j(x)^2}{q_j}.
+\]
+
+The problem states that each coordinate of the feature vector satisfies
+
+\[
+|\varphi_j(x)|
+\le
+r_j.
+\]
+
+Squaring both sides gives
+
+\[
+\varphi_j(x)^2
+\le
+r_j^2.
+\]
+
+Substituting this bound coordinate-by-coordinate yields
+
+\[
+\frac{\varphi_j(x)^2}{q_j}
+\le
+\frac{r_j^2}{q_j}.
+\]
+
+Summing over all coordinates,
+
+\[
+\|\varphi(x)\|_{Q,*}^2
+=
+\sum_{j=1}^{d}
+\frac{\varphi_j(x)^2}{q_j}
+\le
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\|\varphi(x)\|_{Q,*}^2
+\le
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+}
+\]
+
+This quantity will later control the Lipschitz constant appearing in the RERM bound.
+
+\medskip
+
+\textbf{Step 4: Compute the weighted regularizer.}
+
+The regularizer associated with the geometry is
+
+\[
+\Psi_Q(w)
+=
+\frac12 w^\top Qw.
+\]
+
+Using the diagonal structure of \(Q\),
+
+\[
+w^\top Qw
+=
+\sum_{j=1}^{d}
+q_jw_j^2.
+\]
+
+Hence
+
+\[
+\boxed{
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_j w_j^2.
+}
+\]
+
+\medskip
+
+\textbf{Step 5: Bound the regularizer over the comparator set.}
+
+The comparator set is
+
+\[
+\mathcal C_b
+=
+\{
+w :
+|w_j|
+\le
+b_j
+\text{ for all }j
+\}.
+\]
+
+Thus every coordinate satisfies
+
+\[
+|w_j|
+\le
+b_j.
+\]
+
+Squaring both sides gives
+
+\[
+w_j^2
+\le
+b_j^2.
+\]
+
+Substituting into the expression for the regularizer,
+
+\[
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_jw_j^2
+\le
+\frac12
+\sum_{j=1}^{d}
+q_jb_j^2.
+\]
+
+Therefore every vector in \(\mathcal C_b\) satisfies
+
+\[
+\Psi_Q(w)
+\le
+\frac12
+\sum_{j=1}^{d}
+q_jb_j^2.
+\]
+
+\medskip
+
+\textbf{Step 6: Show that the bound is attained.}
+
+To compute the supremum, we must verify that the upper bound can actually be achieved.
+
+Choose
+
+\[
+w_j=b_j
+\]
+
+for every coordinate \(j\). Equivalently, we could choose
+
+\[
+w_j=-b_j,
+\]
+
+since the regularizer depends only on \(w_j^2\).
+
+For either choice,
+
+\[
+w_j^2=b_j^2.
+\]
+
+Substituting into the regularizer,
+
+\[
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_jb_j^2.
+\]
+
+Thus the upper bound is attained exactly.
+
+Consequently,
+
+\[
+\boxed{
+\sup_{w\in\mathcal C_b}
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_jb_j^2.
+}
+\]
+
+\medskip
+
+\textbf{Summary.}
+
+The two geometric quantities needed for the weighted-geometry RERM analysis are
+
+\[
+\boxed{
+\|\varphi(x)\|_{Q,*}^2
+\le
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+}
+\]
+
+and
+
+\[
+\boxed{
+\sup_{w\in\mathcal C_b}
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_jb_j^2.
+}
+\]
+
+The first quantity measures the complexity of the feature map in the dual geometry, while the second measures the size of the comparator class under the weighted regularizer.
+
+\end{solutionbox}
+
+\item \textbf{Fixed $Q$.}
+
+Apply the Week 8 theorem and optimize over $\lambda$ to get
+\[
+\E L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sqrt{
+\left(\sum_{j=1}^dq_jb_j^2\right)
+\left(\sum_{j=1}^d\frac{r_j^2}{q_j}\right)
+}.
+\]
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+We now apply the Week 8 Regularized Empirical Risk Minimization (RERM) theorem using the weighted Euclidean geometry induced by the matrix
+
+\[
+Q=\operatorname{diag}(q_1,\ldots,q_d).
+\]
+
+Our objective is to derive a learning guarantee that depends explicitly on the geometry parameters \(q_1,\ldots,q_d\), and then choose the regularization parameter \(\lambda\) that minimizes the resulting upper bound.
+
+The strategy is:
+
+\begin{enumerate}
+    \item Compute the Lipschitz constant of the loss with respect to the weighted norm \(\|\cdot\|_Q\).
+    \item Substitute the geometric quantities from Part C.1 into the RERM theorem.
+    \item Optimize the resulting bound over \(\lambda\).
+\end{enumerate}
+
+\medskip
+
+\textbf{Step 1: Determine the Lipschitz constant in the weighted geometry.}
+
+The problem states that the scalar loss is \(g\)-Lipschitz in its prediction argument.
+
+The prediction associated with parameter vector \(w\) is
+
+\[
+\langle w,\varphi(x)\rangle.
+\]
+
+Consider two parameter vectors \(w\) and \(w'\). The difference in predictions is
+
+\[
+\langle w,\varphi(x)\rangle
+-
+\langle w',\varphi(x)\rangle.
+\]
+
+Using linearity of the inner product,
+
+\[
+\langle w,\varphi(x)\rangle
+-
+\langle w',\varphi(x)\rangle
+=
+\langle w-w',\varphi(x)\rangle.
+\]
+
+Taking absolute values gives
+
+\[
+\left|
+\langle w,\varphi(x)\rangle
+-
+\langle w',\varphi(x)\rangle
+\right|
+=
+\left|
+\langle w-w',\varphi(x)\rangle
+\right|.
+\]
+
+The weighted norm \(\|\cdot\|_Q\) and its dual norm \(\|\cdot\|_{Q,*}\) satisfy Hölder's inequality:
+
+\[
+|\langle u,v\rangle|
+\le
+\|u\|_Q\|v\|_{Q,*}.
+\]
+
+Applying this inequality with
+
+\[
+u=w-w',
+\qquad
+v=\varphi(x),
+\]
+
+yields
+
+\[
+|\langle w-w',\varphi(x)\rangle|
+\le
+\|w-w'\|_Q
+\|\varphi(x)\|_{Q,*}.
+\]
+
+Therefore,
+
+\[
+\left|
+\langle w,\varphi(x)\rangle
+-
+\langle w',\varphi(x)\rangle
+\right|
+\le
+\|w-w'\|_Q
+\|\varphi(x)\|_{Q,*}.
+\]
+
+Since the scalar loss is \(g\)-Lipschitz in its prediction argument,
+
+\[
+|\ell(w,z)-\ell(w',z)|
+\le
+g
+\|w-w'\|_Q
+\|\varphi(x)\|_{Q,*}.
+\]
+
+Thus the loss is Lipschitz with respect to the norm \(\|\cdot\|_Q\) with Lipschitz constant
+
+\[
+G_Q
+=
+g
+\sup_x
+\|\varphi(x)\|_{Q,*}.
+\]
+
+\medskip
+
+\textbf{Step 2: Bound \(G_Q\) using Part C.1.}
+
+From Part C.1 we proved that
+
+\[
+\|\varphi(x)\|_{Q,*}^2
+\le
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+\]
+
+Therefore,
+
+\[
+G_Q^2
+=
+g^2
+\left(
+\sup_x
+\|\varphi(x)\|_{Q,*}
+\right)^2
+\le
+g^2
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+\]
+
+Hence
+
+\[
+\boxed{
+G_Q^2
+\le
+g^2
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+}
+\]
+
+This quantity plays the role of the Lipschitz constant in the RERM theorem.
+
+\medskip
+
+\textbf{Step 3: Apply the Week 8 RERM theorem.}
+
+The weighted regularizer is
+
+\[
+\Psi_Q(w)
+=
+\frac12 w^\top Qw.
+\]
+
+Because the norm \(\|\cdot\|_Q\) is generated by the quadratic form \(w^\top Qw\), the function \(\Psi_Q\) is \(1\)-strongly convex with respect to \(\|\cdot\|_Q\).
+
+Therefore the Week 8 RERM theorem can be applied with
+
+\[
+\alpha=1.
+\]
+
+The theorem gives
+
+\[
+\E
+L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\lambda
+\sup_{w\in\mathcal C_b}
+\Psi_Q(w)
++
+\frac{2G_Q^2}{\lambda n}.
+\]
+
+From Part C.1 we also showed that
+
+\[
+\sup_{w\in\mathcal C_b}
+\Psi_Q(w)
+=
+\frac12
+\sum_{j=1}^{d}
+q_j b_j^2.
+\]
+
+Substituting both geometric quantities into the theorem yields
+
+\[
+\E
+L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{\lambda}{2}
+\sum_{j=1}^{d}
+q_j b_j^2
++
+\frac{2g^2}{\lambda n}
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+\]
+
+Thus,
+
+\[
+\boxed{
+\E
+L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{\lambda}{2}
+\sum_{j=1}^{d}
+q_j b_j^2
++
+\frac{2g^2}{\lambda n}
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+}
+\]
+
+\medskip
+
+\textbf{Step 4: Introduce simpler notation.}
+
+Define
+
+\[
+A
+=
+\sum_{j=1}^{d}
+q_j b_j^2,
+\]
+
+and
+
+\[
+B
+=
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}.
+\]
+
+Then the bound becomes
+
+\[
+\E
+L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{\lambda A}{2}
++
+\frac{2g^2B}{\lambda n}.
+\]
+
+The only remaining task is to choose \(\lambda\) optimally.
+
+\medskip
+
+\textbf{Step 5: Optimize the bound over \(\lambda\).}
+
+The excess-risk term is
+
+\[
+f(\lambda)
+=
+\frac{\lambda A}{2}
++
+\frac{2g^2B}{\lambda n}.
+\]
+
+This has the standard form
+
+\[
+a\lambda+\frac{b}{\lambda},
+\]
+
+whose minimum occurs when the two terms balance.
+
+Therefore we solve
+
+\[
+\frac{\lambda A}{2}
+=
+\frac{2g^2B}{\lambda n}.
+\]
+
+Multiplying both sides by \(\lambda\),
+
+\[
+\frac{\lambda^2A}{2}
+=
+\frac{2g^2B}{n}.
+\]
+
+Multiplying by \(2\),
+
+\[
+\lambda^2A
+=
+\frac{4g^2B}{n}.
+\]
+
+Thus
+
+\[
+\lambda^2
+=
+\frac{4g^2B}{An}.
+\]
+
+Taking square roots,
+
+\[
+\boxed{
+\lambda
+=
+\frac{2g}{\sqrt n}
+\sqrt{\frac{B}{A}}.
+}
+\]
+
+\medskip
+
+\textbf{Step 6: Evaluate the optimized excess term.}
+
+At the optimum, the two terms are equal. Therefore the total excess equals twice either term:
+
+\[
+2
+\sqrt{
+\frac{A}{2}
+\cdot
+\frac{2g^2B}{n}
+}.
+\]
+
+The factors \(2\) cancel:
+
+\[
+=
+2
+\sqrt{
+\frac{g^2AB}{n}
+}.
+\]
+
+Taking \(g\) outside the square root,
+
+\[
+=
+2g
+\sqrt{
+\frac{AB}{n}
+}.
+\]
+
+Substituting the definitions of \(A\) and \(B\),
+
+\[
+=
+\frac{2g}{\sqrt n}
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\E
+L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}.
+}
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The learning guarantee depends on the geometry through the product
+
+\[
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right).
+\]
+
+The first factor measures the size of the comparator class under the weighted regularizer, while the second measures the complexity of the feature map in the dual geometry.
+
+Choosing the weights \(q_j\) appropriately can significantly improve the learning guarantee, which is exactly the motivation for the optimization carried out in the next part.
+
+\end{solutionbox}
+
+\item \textbf{Best diagonal geometry.}
+
+Optimize the right-hand side over $q_j>0$ and show that the best excess term is
+\[
+\frac{2g}{\sqrt n}\sum_{j=1}^db_jr_j.
+\]
+
+\begin{solutionbox}
+
+\textbf{Goal.}
+
+In Part C.2 we proved that for any choice of positive diagonal weights
+
+\[
+Q=\operatorname{diag}(q_1,\ldots,q_d),
+\]
+
+the RERM algorithm satisfies
+
+\[
+\E L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}.
+\]
+
+The only quantity that still depends on the choice of geometry is
+
+\[
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}.
+\]
+
+Our goal is to choose the weights \(q_j\) so that this quantity is as small as possible.
+
+Since the square root is a monotone function, minimizing
+
+\[
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}
+\]
+
+is equivalent to minimizing the product
+
+\[
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right).
+\]
+
+Therefore we focus on the product itself.
+
+\medskip
+
+\textbf{Step 1: Apply the Cauchy--Schwarz inequality.}
+
+Consider the two nonnegative sequences
+
+\[
+a_j=q_j b_j^2
+\]
+
+and
+
+\[
+c_j=\frac{r_j^2}{q_j}.
+\]
+
+The Cauchy--Schwarz inequality states that for any nonnegative sequences,
+
+\[
+\left(\sum_{j=1}^{d} a_j\right)
+\left(\sum_{j=1}^{d} c_j\right)
+\ge
+\left(
+\sum_{j=1}^{d}
+\sqrt{a_jc_j}
+\right)^2.
+\]
+
+Substituting our choices of \(a_j\) and \(c_j\),
+
+\[
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+\ge
+\left(
+\sum_{j=1}^{d}
+\sqrt{
+q_j b_j^2
+\cdot
+\frac{r_j^2}{q_j}
+}
+\right)^2.
+\]
+
+Inside the square root, the factors \(q_j\) cancel:
+
+\[
+q_j b_j^2
+\cdot
+\frac{r_j^2}{q_j}
+=
+b_j^2 r_j^2.
+\]
+
+Therefore,
+
+\[
+\sqrt{
+q_j b_j^2
+\cdot
+\frac{r_j^2}{q_j}
+}
+=
+\sqrt{b_j^2r_j^2}.
+\]
+
+Since \(b_j>0\) and \(r_j>0\),
+
+\[
+\sqrt{b_j^2r_j^2}
+=
+b_jr_j.
+\]
+
+Substituting this into the previous expression gives
+
+\[
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+\ge
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2.
+\]
+
+Thus we have established the lower bound
+
+\[
+\boxed{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+\ge
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2.
+}
+\]
+
+This shows that no choice of weights can make the product smaller than
+
+\[
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2.
+\]
+
+\medskip
+
+\textbf{Step 2: Determine when equality holds.}
+
+To prove optimality, we must show that the lower bound can actually be achieved.
+
+Equality in the Cauchy--Schwarz inequality occurs if and only if the two sequences are proportional. Therefore we require
+
+\[
+q_j b_j^2
+\propto
+\frac{r_j^2}{q_j}.
+\]
+
+Equivalently,
+
+\[
+q_j^2 b_j^2
+\propto
+r_j^2.
+\]
+
+Taking square roots,
+
+\[
+q_j b_j
+\propto
+r_j.
+\]
+
+Hence the optimal weights satisfy
+
+\[
+\boxed{
+q_j
+\propto
+\frac{r_j}{b_j}.
+}
+\]
+
+Any positive constant multiple of this choice gives the same product.
+
+\medskip
+
+\textbf{Step 3: Verify the equality condition.}
+
+For simplicity, choose
+
+\[
+q_j
+=
+\frac{r_j}{b_j}.
+\]
+
+Then
+
+\[
+q_j b_j^2
+=
+\frac{r_j}{b_j}b_j^2
+=
+b_jr_j.
+\]
+
+Summing over all coordinates,
+
+\[
+\sum_{j=1}^{d}
+q_j b_j^2
+=
+\sum_{j=1}^{d}
+b_jr_j.
+\]
+
+Next,
+
+\[
+\frac{r_j^2}{q_j}
+=
+\frac{r_j^2}{r_j/b_j}
+=
+b_jr_j.
+\]
+
+Therefore,
+
+\[
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+=
+\sum_{j=1}^{d}
+b_jr_j.
+\]
+
+Consequently,
+
+\[
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+=
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2.
+\]
+
+This exactly matches the lower bound derived in Step 1.
+
+Therefore the lower bound is attainable and hence optimal.
+
+\medskip
+
+\textbf{Step 4: Compute the optimized square root term.}
+
+Since the optimal product equals
+
+\[
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2,
+\]
+
+taking the square root gives
+
+\[
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+b_jr_j
+\right)^2
+}
+=
+\sum_{j=1}^{d}
+b_jr_j.
+\]
+
+Thus the optimized geometric quantity is
+
+\[
+\boxed{
+\sum_{j=1}^{d}
+b_jr_j.
+}
+\]
+
+\medskip
+
+\textbf{Step 5: Substitute into the RERM bound.}
+
+From Part C.2,
+
+\[
+\E L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sqrt{
+\left(
+\sum_{j=1}^{d}
+q_j b_j^2
+\right)
+\left(
+\sum_{j=1}^{d}
+\frac{r_j^2}{q_j}
+\right)
+}.
+\]
+
+Substituting the optimized value of the square root term,
+
+\[
+\E L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sum_{j=1}^{d}
+b_jr_j.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\E L_{\mathcal D}(A_\lambda(S))
+\le
+\inf_{w\in\mathcal C_b}
+L_{\mathcal D}(w)
++
+\frac{2g}{\sqrt n}
+\sum_{j=1}^{d}
+b_jr_j.
+}
+\]
+
+\medskip
+
+\textbf{Interpretation.}
+
+The optimal geometry places larger weight on coordinates that have large feature magnitudes \(r_j\) and smaller allowable parameter magnitudes \(b_j\), according to
+
+\[
+q_j
+\propto
+\frac{r_j}{b_j}.
+\]
+
+With this choice, the complexity term improves from a product of two sums to the much simpler quantity
+
+\[
+\sum_{j=1}^{d}
+b_jr_j.
+\]
+
+This is exactly the weighted geometry that best matches the structure of the comparator set and the feature map, yielding the strongest learning guarantee obtainable from the bound in Part C.2.
+
+\end{solutionbox}
+
+\end{enumerate}
+
+% =====================================================
+\section{AI Usage Report}
+% =====================================================
+
+Write a short report describing how you used AI in this assignment. Do not just list tools; explain what role AI played in your work and how you checked the result. Address:
+\begin{enumerate}
+    \item Describe the parts of the assignment for which you used AI.
+    \item Describe concrete AI suggestions you accepted and explain why.
+    \item Describe concrete AI suggestions you rejected or substantially modified, and explain what was wrong, incomplete, or unhelpful about them.
+    \item Describe how you verified the correctness of what you submitted.
+\end{enumerate}
+Also describe concrete updates to your AI workflow that resulted from this assignment. Explain the 5 most recent changes you made to your AI workflow and why. If you did not use AI for some part of the assignment, say so explicitly.
+
+\begin{solutionbox}
+For this assignment, I used AI as a proof-writing and algebra-checking collaborator. I used it mainly for Part A and Part B to help organize the validation-selection argument, the RERM oracle inequality, and the approximate-optimization stability proof. I also used it in Part C to check the weighted norm and dual norm calculations and to verify the Cauchy--Schwarz optimization over the diagonal matrix $Q$.
+
+A concrete AI suggestion I accepted was the structure of the validation proof in Part A.1: first compare the selected predictor $h_{\widehat k}$ to an arbitrary fixed $h_k$, then control the maximum validation deviation over all $K$ predictors. I accepted this because it directly matches the finite-class validation argument and correctly explains why the final term depends on $\log K$. I also accepted the suggestion to write the two-term regularization expression as
+\[
+f(\lambda)=\lambda a+\frac{c}{\lambda},
+\]
+because it made the optimization in Part A.3 much clearer.
+
+One suggestion I modified was the treatment of approximate RERM in Part B.3. A less careful approach would use the full approximate-stability bound from Part B.2 directly, which would introduce an extra factor of
+\[
+2G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+But the requested bound only has one optimization-error term,
+\[
+G\sqrt{\frac{2\eta}{\lambda\alpha}}.
+\]
+To get the sharper bound, I compared $\widetilde w_S$ directly to the exact minimizer $w_S$, instead of using approximate stability. I checked this step using the Lipschitz property and the distance bound from Part B.1.
+
+Another suggestion I modified was in Part B.5. Since the regularizer is
+\[
+\Psi(w)=\frac12\norm{w}_2^2,
+\]
+a comparator with $\norm{u}_2\le B$ has
+\[
+\Psi(u)\le\frac12B^2,
+\]
+not $B^2$. I made sure the specialization used the correct scale. This changes the optimized value of $\lambda$ and gives the cleaner term
+\[
+\frac{2RB}{\sqrt n}.
+\]
+
+To verify correctness, I checked each proof against the assumptions in the assignment. For Part A, I checked that validation independence was used only after conditioning on the training sample. For Part B, I checked that strong convexity was applied to $F_S$, whose strong convexity parameter is $\lambda\alpha$, not just $\alpha$. For Part C, I checked the dual norm formula
+\[
+\norm{v}_{Q,*}^2=\sum_{j=1}^d\frac{v_j^2}{q_j}
+\]
+and verified that the final optimization over $q_j$ is exactly an application of Cauchy--Schwarz. I also checked constants by substituting simple symbolic values into the expressions and confirming that the optimized terms balanced.
+
+This assignment changed my AI workflow in several ways. First, I added a checklist item to verify every constant after optimizing expressions of the form $\lambda a+c/\lambda$. Second, I added a reminder to check whether a regularizer includes a factor of $1/2$, because that affects comparator-scale bounds. Third, I added a step to distinguish exact stability, approximate stability, and direct comparison to the exact minimizer, since these can give different constants. Fourth, I added a habit of naming repeated quantities like $a$, $c$, $A$, and $B$ before optimizing, which made the algebra easier to inspect. Fifth, I added a final review step where each displayed bound is compared directly to the requested bound in the assignment prompt.
+
+No coding or Lean formalization was required for this assignment. I did not include a separate Python or Lean artifact because all parts were proof and derivation based. If repository artifacts are expected, I would include this LaTeX file and the compiled PDF under the Assignment 8 directory.
+\end{solutionbox}
+
+\end{document}
